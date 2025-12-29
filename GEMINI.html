@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUBGAMES HTML STORE </title>
+    
+    <style>
+        /* Глобальные стили и Темная Тема */
+        :root {
+            --color-dark-primary: #1b2838;
+            --color-dark-secondary: #2a475e;
+            --color-dark-tertiary: #171a21;
+            --color-text-primary: #c7d5e0;
+            --color-text-secondary: #fff;
+            --color-accent-blue: #66c0f4;
+            --color-accent-blue-hover: #a0d3e8;
+            --color-green: #a1f466;
+            --color-green-darker: #78bc42;
+            --color-online: #57cbde;
+            --color-offline: #898989;
+            --color-wishlist: #ffc82c;
+            --color-wishlist-hover: #ffe08b;
+            --color-purple: #9c6bff;
+            --color-purple-hover: #b18fff;
+            --color-red: #ff6b6b;
+            --color-red-hover: #ff8e8e;
+            --color-sale: #ff4757;
+            --color-sale-bg: linear-gradient(90deg, #4c6b22, #5a8229, #6b9a31);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-dark-primary);
+            color: var(--color-text-primary);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            min-height: calc(100vh - 80px);
+        }
+
+        h1, h2, h3 {
+            color: var(--color-text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            padding: 20px 0;
+            color: var(--color-accent-blue);
+            background: linear-gradient(90deg, #66c0f4, #9c6bff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Навигация */
+        nav {
+            background-color: var(--color-dark-tertiary);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        nav .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        nav a, nav .nav-link {
+            color: var(--color-text-primary);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            cursor: pointer;
+        }
+
+        nav a:hover, nav .nav-link:hover,
+        nav a.active, nav .nav-link.active {
+            background-color: var(--color-dark-secondary);
+            color: var(--color-accent-blue);
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #nav-wallet-balance {
+            color: var(--color-green);
+            font-weight: bold;
+            font-size: 1.1em;
+            background-color: var(--color-dark-secondary);
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+
+        /* Страницы */
+        .page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Формы */
+        .form-container {
+            max-width: 450px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: var(--color-dark-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--color-accent-blue);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--color-dark-primary);
+            border: 1px solid var(--color-dark-tertiary);
+            color: var(--color-text-secondary);
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        /* Кнопки */
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            text-align: center;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background-color: var(--color-accent-blue);
+            color: var(--color-dark-tertiary);
+        }
+
+        .btn-buy {
+            background-color: var(--color-green-darker);
+            color: var(--color-dark-tertiary);
+            padding: 10px 15px;
+            font-size: 0.9em;
+        }
+        
+        .btn-buy:hover:not(:disabled) {
+            background-color: var(--color-green);
+        }
+
+        .btn-wishlist {
+            background-color: var(--color-wishlist);
+            color: var(--color-dark-tertiary);
+            padding: 10px 15px;
+            font-size: 0.9em;
+        }
+        
+        .btn-wishlist:hover:not(:disabled) {
+            background-color: var(--color-wishlist-hover);
+        }
+        
+        .btn-wishlist-remove {
+            background-color: #aa5555;
+            color: white;
+            padding: 10px 15px;
+            font-size: 0.9em;
+        }
+        
+        .btn-wishlist-remove:hover:not(:disabled) {
+            background-color: #cc6666;
+        }
+
+        .btn-key {
+            background-color: var(--color-purple);
+            color: var(--color-dark-tertiary);
+            padding: 10px 15px;
+            font-size: 0.9em;
+        }
+        
+        .btn-key:hover:not(:disabled) {
+            background-color: var(--color-purple-hover);
+        }
+
+        .btn-play {
+            background-color: var(--color-accent-blue);
+            color: var(--color-dark-tertiary);
+            width: 100%;
+        }
+
+        .btn-full {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-disabled,
+        .btn:disabled {
+            background-color: #555 !important;
+            color: #999 !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Сетка игр */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .game-card {
+            background-color: var(--color-dark-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card-poster img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .game-card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card-content h3 {
+            margin-top: 0;
+            font-size: 1.4em;
+        }
+        
+        .game-card-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .game-card-genre {
+            font-style: italic;
+            color: var(--color-text-primary);
+            font-size: 0.9em;
+        }
+        
+        .game-card-price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--color-accent-blue-hover);
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
+        /* Стили для скидок */
+        .sale-price {
+            color: var(--color-green);
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        
+        .original-price {
+            color: var(--color-text-primary);
+            text-decoration: line-through;
+            font-size: 0.9em;
+            margin-left: 8px;
+            opacity: 0.7;
+        }
+
+        .discount-badge {
+            background-color: var(--color-sale);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .game-card-desc {
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .game-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        /* Стикер скидки на карточке игры */
+        .game-card-sale {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            transform: rotate(5deg);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        /* Баннер распродажи */
+        .sale-banner {
+            background: var(--color-sale-bg);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s infinite;
+        }
+
+        .sale-banner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 25%, 
+                rgba(255,255,255,0.1) 25%, 
+                rgba(255,255,255,0.1) 50%, 
+                transparent 50%, 
+                transparent 75%, 
+                rgba(255,255,255,0.1) 75%);
+            background-size: 20px 20px;
+            animation: moveStripes 2s linear infinite;
+        }
+
+        .sale-banner-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .sale-banner h3 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .sale-banner p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .sale-countdown {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        @keyframes moveStripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+
+        /* Новый дизайн профиля как в Steam */
+        .profile-header {
+            background: linear-gradient(135deg, #1b2838 0%, #2a475e 100%);
+            border-radius: 8px 8px 0 0;
+            padding: 30px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 184px;
+            height: 184px;
+            border-radius: 50%;
+            border: 4px solid var(--color-accent-blue);
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+
+        .profile-badge {
+            background-color: var(--color-dark-tertiary);
+            color: var(--color-accent-blue);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            margin-right: 10px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .profile-level {
+            background-color: #4c6b22;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .profile-info-card {
+            background-color: var(--color-dark-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--color-accent-blue);
+        }
+
+        .profile-info-card h3 {
+            color: var(--color-accent-blue);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .profile-stat {
+            text-align: center;
+            background-color: var(--color-dark-tertiary);
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+
+        .profile-stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--color-accent-blue);
+            display: block;
+        }
+
+        .profile-stat-label {
+            font-size: 0.9em;
+            color: var(--color-text-primary);
+            opacity: 0.8;
+        }
+
+        /* Стили для друзей */
+        .friends-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .friend-card {
+            background-color: var(--color-dark-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .friend-card:hover {
+            transform: translateY(-3px);
+            background-color: var(--color-dark-tertiary);
+        }
+
+        .friend-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-accent-blue);
+        }
+
+        .friend-info {
+            flex-grow: 1;
+        }
+
+        .friend-name {
+            font-weight: bold;
+            color: var(--color-text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .friend-status {
+            font-size: 0.9em;
+        }
+
+        .status-online {
+            color: var(--color-online);
+        }
+
+        .status-offline {
+            color: var(--color-offline);
+        }
+
+        .status-ingame {
+            color: var(--color-green);
+        }
+
+        .add-friend-form {
+            background-color: var(--color-dark-secondary);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--color-green);
+        }
+
+        /* Предустановленные ключи */
+        .predefined-keys {
+            background-color: var(--color-dark-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--color-purple);
+        }
+        
+        .predefined-keys h3 {
+            color: var(--color-purple);
+            margin-bottom: 15px;
+        }
+        
+        .keys-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .key-card {
+            background-color: var(--color-dark-primary);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--color-purple);
+        }
+        
+        .key-card h4 {
+            color: var(--color-text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .key-card-code {
+            font-family: monospace;
+            font-size: 1.1em;
+            color: var(--color-purple);
+            margin: 10px 0;
+            padding: 8px;
+            background-color: rgba(156, 107, 255, 0.1);
+            border-radius: 3px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .key-card-desc {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        /* Панель активации ключей (внизу экрана) */
+        .key-activation-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--color-dark-tertiary);
+            padding: 15px 20px;
+            border-top: 2px solid var(--color-purple);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .key-activation-panel.hidden {
+            display: none;
+        }
+        
+        .key-activation-label {
+            color: var(--color-purple);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        #key-activation-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            background-color: var(--color-dark-primary);
+            border: 1px solid var(--color-purple);
+            color: var(--color-text-secondary);
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        #key-activation-btn {
+            background-color: var(--color-purple);
+            color: var(--color-dark-tertiary);
+            padding: 12px 25px;
+            white-space: nowrap;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <h1>CUBGAMES HTML STORE</h1>
+
+        <nav id="main-nav" class="hidden">
+            <div class="nav-links">
+                <a href="#" class="nav-link" data-page="page-store">Магазин</a>
+                <a href="#" class="nav-link" data-page="page-library">Библиотека</a>
+                <a href="#" class="nav-link" data-page="page-wishlist">Желаемое</a> 
+                <a href="#" class="nav-link" data-page="page-friends">Друзья</a>
+                <a href="#" class="nav-link" data-page="page-profile">Профиль</a>
+            </div>
+            <div class="nav-user">
+                <span id="nav-wallet-balance">0 руб.</span>
+                <span id="nav-user-greeting"></span>
+                <a href="#" id="nav-logout" class="nav-link">Выйти</a>
+            </div>
+        </nav>
+
+        <main>
+            <!-- Страница логина -->
+            <section id="page-login" class="page active">
+                <div class="form-container">
+                    <h2>Вход в CUBGAMES STORE</h2>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-username">Никнейм</label>
+                            <input type="text" id="login-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Пароль</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Войти</button>
+                    </form>
+                    <p>Нет аккаунта? <a id="show-register">Зарегистрироваться</a></p>
+                </div>
+            </section>
+
+            <!-- Страница регистрации -->
+            <section id="page-register" class="page">
+                <div class="form-container">
+                    <h2>Регистрация</h2>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="register-username">Никнейм</label>
+                            <input type="text" id="register-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Пароль</label>
+                            <input type="password" id="register-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Создать аккаунт</button>
+                    </form>
+                    <p>Уже есть аккаунт? <a id="show-login">Войти</a></p>
+                </div>
+            </section>
+
+            <!-- Магазин -->
+            <section id="page-store" class="page">
+                <h2>🎮 Магазин игр</h2>
+                
+                <!-- Баннер распродажи -->
+                <div class="sale-banner">
+                    <div class="sale-banner-content">
+                        <h3>🔥 ОГРОМНАЯ РАСПРОДАЖА!</h3>
+                        <p>Скидки до 75% на лучшие игры. Акция действует до:</p>
+                        <div class="sale-countdown" id="sale-countdown">
+                            15 дней 22:45:31
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="store-game-grid" class="game-grid">
+                    <!-- Игры загрузятся через JS -->
+                </div>
+            </section>
+
+            <!-- Библиотека -->
+            <section id="page-library" class="page">
+                <h2>📚 Мои игры</h2>
+                <div id="library-game-grid" class="game-grid">
+                    <!-- Игры из библиотеки загрузятся через JS -->
+                </div>
+            </section>
+            
+            <!-- Желаемое -->
+            <section id="page-wishlist" class="page">
+                <h2>⭐ Список желаемого</h2>
+                <div id="wishlist-game-grid" class="game-grid">
+                    <!-- Игры из желаемого загрузятся через JS -->
+                </div>
+            </section>
+
+            <!-- Друзья -->
+            <section id="page-friends" class="page">
+                <h2>👥 Друзья</h2>
+                
+                <div class="add-friend-form">
+                    <h3>Добавить друга</h3>
+                    <form id="add-friend-form">
+                        <div class="form-group">
+                            <label for="friend-name">Имя друга</label>
+                            <input type="text" id="friend-name" placeholder="Введите никнейм друга" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="friend-avatar">Ссылка на аватар (опционально)</label>
+                            <input type="text" id="friend-avatar" placeholder="https://example.com/avatar.jpg">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить друга</button>
+                    </form>
+                </div>
+                
+                <h3>Мои друзья</h3>
+                <div id="friends-list" class="friends-list">
+                    <!-- Друзья загрузятся через JS -->
+                </div>
+            </section>
+
+            <!-- Профиль -->
+            <section id="page-profile" class="page">
+                <div class="profile-header">
+                    <img src="https://i.imgur.com/4Yj2aBq.png" alt="Аватар" class="profile-avatar" id="profile-avatar">
+                    <h2 id="profile-display-name">Cublocker</h2>
+                    
+                    <div>
+                        <span class="profile-badge">Russian Federation</span>
+                        <span class="profile-level">Уровень 5</span>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <span class="profile-stat-value" id="profile-game-count">0</span>
+                            <span class="profile-stat-label">Игр</span>
+                        </div>
+                        <div class="profile-stat">
+                            <span class="profile-stat-value" id="profile-friends-count">0</span>
+                            <span class="profile-stat-label">Друзей</span>
+                        </div>
+                        <div class="profile-stat">
+                            <span class="profile-stat-value" id="profile-wishlist-count">0</span>
+                            <span class="profile-stat-label">В желаемом</span>
+                        </div>
+                        <div class="profile-stat">
+                            <span class="profile-stat-value" id="profile-wallet-balance">0</span>
+                            <span class="profile-stat-label">Баланс</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-info-grid">
+                    <div class="profile-info-card">
+                        <h3>Информация</h3>
+                        <p><strong>ID пользователя:</strong> <span id="profile-id"></span></p>
+                        <p><strong>Никнейм:</strong> <span id="profile-username"></span></p>
+                        <p><strong>Имя профиля:</strong> <span id="profile-name-display"></span></p>
+                        <p><strong>Последний вход:</strong> Сегодня</p>
+                    </div>
+                    
+                    <div class="profile-info-card">
+                        <h3>Настройки профиля</h3>
+                        <form id="profile-form">
+                            <div class="form-group">
+                                <label for="profile-name">Имя профиля</label>
+                                <input type="text" id="profile-name" placeholder="Введите имя профиля">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-avatar-url">Ссылка на аватар</label>
+                                <input type="text" id="profile-avatar-url" placeholder="https://example.com/avatar.jpg">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="profile-info-card">
+                    <h3>Недавняя активность</h3>
+                    <p id="profile-recent-activity">21.8 ч за последние 2 недели</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Панель активации ключей -->
+    <div id="key-activation-panel" class="key-activation-panel hidden">
+        <span class="key-activation-label">🔑 Активировать ключ:</span>
+        <input type="text" id="key-activation-input" placeholder="Введите ключ активации...">
+        <button id="key-activation-btn" class="btn">Активировать</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ПРЕДУСТАНОВЛЕННЫЕ КЛЮЧИ
+            const PREDEFINED_KEYS = {
+                "BAL-0000-0000-0000-5000": {
+                    type: 'balance',
+                    amount: 5000,
+                    description: 'Пополнение баланса на 5000 руб.',
+                    used: false
+                },
+                "BAL-0000-0000-0000-100000": {
+                    type: 'balance',
+                    amount: 1000,
+                    description: 'Пополнение баланса на 1000 руб.',
+                    used: false
+                },
+
+                "GAME-0000-0000-0000-CP77": {
+                    type: 'game',
+                    gameId: 1,
+                    description: 'GTA5',
+                    used: false
+                },
+                "GAME-0000-0000-0000-W3": {
+                    type: 'game',
+                    gameId: 2,
+                    description: 'DOTA 2',
+                    used: false
+                },
+                "GAME-0000-0000-0400-К6": {
+                    type: 'game',
+                    gameId: 3,
+                    description: 'ruBLOX',
+                    used: false
+                }
+            };
+
+            // БАЗА ДАННЫХ ИГР
+            const GAMES_DATABASE = [
+                {
+                    id: 1,
+                    title: "GTA 5",
+                    poster: "https://i.yapx.ru/ccgui.png",
+                    genre: "RPG / Экшен",
+                    price: 2999,
+                    sale: {
+                        active: true,
+                        discount: 50,
+                        endDate: "2025-12-31"
+                    },
+                    description: "мультиплатформенная компьютерная игра в жанре action-adventure с открытым миром.",
+                    htmlGame: "gta5/gta5.html"
+                },
+                {
+                    id: 2,
+                    title: "Dota2",
+                    poster: "https://i.yapx.ru/ccg1J.png",
+                    genre: "Экшен",
+                    price: 0,
+                    sale: null,
+                    description: "Ежедневно миллионы игроков по всему миру сражаются от лица одного из более сотни героев Dota 2.",
+                    htmlGame: "games/дота%202/index.html"
+                },
+                {
+                    id: 3,
+                    title: "RUblox",
+                    poster: "https://i.yapx.ru/ccg4E.png",
+                    genre: "Кросс-платформенность",
+                    price: 799,
+                    sale: {
+                        active: true,
+                        discount: 25,
+                        endDate: "2025-12-31"
+                    },
+                    description: "Онлайн-платформа, где пользователи могут не только играть, но и создавать собственные игры.",
+                    htmlGame: "games/Roblux/index.html"
+                },
+                {
+                    id: 4,
+                    title: "GTA VI",
+                    poster: "https://i.yapx.ru/ccg8V.png",
+                    genre: "RPG / Экшен",
+                    price: 2999,
+                    sale: {
+                        active: true,
+                        discount: 20,
+                        endDate: "2025-12-31"
+                    },
+                    description: "Компьютерная игра в жанре action-adventure с открытым миром.",
+                    htmlGame: ""
+                },
+                {
+                    id: 5,
+                    title: "Moscow courier",
+                    poster: "https://i.yapx.ru/cciV2.png",
+                    genre: "Аркада / Классическая",
+                    price: 199,
+                    sale: {
+                        active: true,
+                        discount: 30,
+                        endDate: "2025-12-31"
+                    },
+                    description: "ТЫ КУРЬЕР В МОСКВЕ ТЕБЕ НУЖНО ДОСТАВЛЯТЬ ЗАКАЗЫ",
+                    htmlGame: "games/MOSCOW.html"
+
+  },
+
+                {
+                    id: 5,
+                    title: "FIFA football",
+                    poster: "https://i.yapx.ru/cciV2.png",
+                    genre: "Аркада / Классическая",
+                    price: 1999,
+                    sale: {
+                        active: true,
+                        discount: 30,
+                        endDate: "2025-12-31"
+                    },
+                    description: "Футбол не больше",
+                    htmlGame: "games/MOSCOW.html"
+  }
+
+            ];
+
+            // Состояние приложения
+            const state = {
+                users: [],
+                currentUser: null,
+                activeKeys: { ...PREDEFINED_KEYS },
+                friends: [] // Новое: список друзей
+            };
+
+            // DOM элементы
+            const app = document.getElementById('app');
+            const mainNav = document.getElementById('main-nav');
+            const pages = document.querySelectorAll('.page');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navWalletBalance = document.getElementById('nav-wallet-balance');
+            const navUserGreeting = document.getElementById('nav-user-greeting');
+            const logoutButton = document.getElementById('nav-logout');
+            
+            // Формы
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const profileForm = document.getElementById('profile-form');
+            const addFriendForm = document.getElementById('add-friend-form');
+            
+            // Страницы
+            const showRegisterLink = document.getElementById('show-register');
+            const showLoginLink = document.getElementById('show-login');
+            const storeGrid = document.getElementById('store-game-grid');
+            const libraryGrid = document.getElementById('library-game-grid');
+            const wishlistGrid = document.getElementById('wishlist-game-grid');
+            const friendsList = document.getElementById('friends-list');
+            
+            // Профиль
+            const profileId = document.getElementById('profile-id');
+            const profileUsername = document.getElementById('profile-username');
+            const profileNameDisplay = document.getElementById('profile-name-display');
+            const profileDisplayName = document.getElementById('profile-display-name');
+            const profileAvatar = document.getElementById('profile-avatar');
+            const profileAvatarUrl = document.getElementById('profile-avatar-url');
+            const profileGameCount = document.getElementById('profile-game-count');
+            const profileFriendsCount = document.getElementById('profile-friends-count');
+            const profileWishlistCount = document.getElementById('profile-wishlist-count');
+            const profileWalletBalance = document.getElementById('profile-wallet-balance');
+            const profileNameInput = document.getElementById('profile-name');
+            const profileRecentActivity = document.getElementById('profile-recent-activity');
+            
+            // Панель ключей
+            const keyActivationPanel = document.getElementById('key-activation-panel');
+            const keyActivationInput = document.getElementById('key-activation-input');
+            const keyActivationBtn = document.getElementById('key-activation-btn');
+
+            // Утилиты
+            function formatPrice(price) {
+                return price === 0 ? "Бесплатно" : `${price} руб.`;
+            }
+
+            function formatBalance(amount) {
+                return `${amount} руб.`;
+            }
+
+            function formatPriceWithSale(price, sale = null) {
+                if (price === 0) return "Бесплатно";
+                
+                if (sale && sale.active) {
+                    const discountedPrice = Math.floor(price * (1 - sale.discount / 100));
+                    return `
+                        <span class="sale-price">${discountedPrice} руб.</span>
+                        <span class="original-price">${price} руб.</span>
+                        <span class="discount-badge">-${sale.discount}%</span>
+                    `;
+                }
+                
+                return `${price} руб.`;
+            }
+
+            function getCurrentUser() {
+                if (!state.currentUser) return null;
+                return state.users.find(user => user.id === state.currentUser);
+            }
+
+            // LocalStorage
+            function loadUsers() {
+                const usersFromStorage = localStorage.getItem('cubgamesUsers');
+                state.users = usersFromStorage ? JSON.parse(usersFromStorage) : [];
+                
+                const keysFromStorage = localStorage.getItem('cubgamesActiveKeys');
+                if (keysFromStorage) {
+                    const storedKeys = JSON.parse(keysFromStorage);
+                    state.activeKeys = { ...PREDEFINED_KEYS, ...storedKeys };
+                }
+                
+                // Загружаем друзей
+                const friendsFromStorage = localStorage.getItem('cubgamesFriends');
+                state.friends = friendsFromStorage ? JSON.parse(friendsFromStorage) : [];
+            }
+
+            function saveUsers() {
+                localStorage.setItem('cubgamesUsers', JSON.stringify(state.users));
+                localStorage.setItem('cubgamesActiveKeys', JSON.stringify(state.activeKeys));
+                localStorage.setItem('cubgamesFriends', JSON.stringify(state.friends));
+            }
+
+            // Таймер обратного отсчета
+            function startSaleCountdown() {
+                const countdownElement = document.getElementById('sale-countdown');
+                if (!countdownElement) return;
+                
+                const saleEndDate = new Date('2025-12-31T23:59:59').getTime();
+                
+                function updateCountdown() {
+                    const now = new Date().getTime();
+                    const timeLeft = saleEndDate - now;
+                    
+                    if (timeLeft <= 0) {
+                        countdownElement.textContent = "Распродажа окончена!";
+                        document.querySelector('.sale-banner').style.opacity = '0.7';
+                        return;
+                    }
+                    
+                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    
+                    countdownElement.textContent = `${days} дн ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+                
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            }
+
+            // Навигация
+            function navigateTo(pageId) {
+                pages.forEach(page => page.classList.remove('active'));
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) targetPage.classList.add('active');
+                
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.page === pageId);
+                });
+
+                const isAuthPage = (pageId === 'page-login' || pageId === 'page-register');
+                mainNav.classList.toggle('hidden', isAuthPage);
+                keyActivationPanel.classList.toggle('hidden', isAuthPage);
+
+                if (!isAuthPage) {
+                    updateNavWallet();
+                    
+                    switch(pageId) {
+                        case 'page-store':
+                            renderStore();
+                            break;
+                        case 'page-library':
+                            renderLibrary();
+                            break;
+                        case 'page-wishlist':
+                            renderWishlist();
+                            break;
+                        case 'page-friends':
+                            renderFriends();
+                            break;
+                        case 'page-profile':
+                            renderProfile();
+                            break;
+                    }
+                }
+            }
+
+            // Рендеринг
+            function renderStore() {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                storeGrid.innerHTML = '';
+                
+                GAMES_DATABASE.forEach(game => {
+                    const isInLibrary = user.library.includes(game.id);
+                    const isInWishlist = user.wishlist.includes(game.id);
+                    
+                    const finalPrice = game.sale && game.sale.active 
+                        ? Math.floor(game.price * (1 - game.sale.discount / 100))
+                        : game.price;
+                        
+                    const canAfford = user.walletBalance >= finalPrice;
+                    
+                    const buyButton = isInLibrary 
+                        ? `<button class="btn btn-disabled" disabled>В библиотеке</button>`
+                        : !canAfford && finalPrice > 0
+                            ? `<button class="btn btn-disabled" disabled>Недостаточно средств</button>`
+                            : `<button class="btn btn-buy btn-buy-game" data-game-id="${game.id}" data-final-price="${finalPrice}">
+                                   Купить ${finalPrice === 0 ? "Бесплатно" : finalPrice + " руб."}
+                               </button>`;
+                    
+                    const wishlistButton = !isInLibrary
+                        ? (isInWishlist
+                            ? `<button class="btn btn-wishlist-remove btn-wishlist-toggle" data-game-id="${game.id}">Убрать</button>`
+                            : `<button class="btn btn-wishlist btn-wishlist-toggle" data-game-id="${game.id}">В желаемое</button>`)
+                        : '';
+                    
+                    const saleSticker = game.sale && game.sale.active 
+                        ? `<div class="game-card-sale">-${game.sale.discount}%</div>`
+                        : '';
+                    
+                    const card = `
+                        <div class="game-card">
+                            ${saleSticker}
+                            <div class="game-card-poster">
+                                <img src="${game.poster}" alt="${game.title}">
+                            </div>
+                            <div class="game-card-content">
+                                <h3>${game.title}</h3>
+                                <div class="game-card-info">
+                                    <span class="game-card-genre">${game.genre}</span>
+                                    <div class="game-card-price">
+                                        ${formatPriceWithSale(game.price, game.sale)}
+                                    </div>
+                                </div>
+                                <p class="game-card-desc">${game.description}</p>
+                                <div class="game-card-actions">
+                                    ${buyButton}
+                                    ${wishlistButton}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    storeGrid.innerHTML += card;
+                });
+            }
+
+            function renderLibrary() {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                libraryGrid.innerHTML = '';
+                
+                if (user.library.length === 0) {
+                    libraryGrid.innerHTML = '<p>Ваша библиотека пуста. Купите игры в магазине или активируйте ключи!</p>';
+                    return;
+                }
+
+                user.library.forEach(gameId => {
+                    const game = GAMES_DATABASE.find(g => g.id === gameId);
+                    if (game) {
+                        const card = `
+                            <div class="game-card">
+                                <div class="game-card-poster">
+                                    <img src="${game.poster}" alt="${game.title}">
+                                </div>
+                                <div class="game-card-content">
+                                    <h3>${game.title}</h3>
+                                    <p class="game-card-desc">${game.description}</p>
+                                    <div class="game-card-actions">
+                                        <button class="btn btn-play btn-play-game" data-game-url="${game.htmlGame}">▶ Играть</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        libraryGrid.innerHTML += card;
+                    }
+                });
+            }
+
+            function renderWishlist() {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                wishlistGrid.innerHTML = '';
+                
+                if (user.wishlist.length === 0) {
+                    wishlistGrid.innerHTML = '<p>Ваш список желаемого пуст.</p>';
+                    return;
+                }
+
+                user.wishlist.forEach(gameId => {
+                    const game = GAMES_DATABASE.find(g => g.id === gameId);
+                    if (game) {
+                        const card = `
+                            <div class="game-card">
+                                <div class="game-card-poster">
+                                    <img src="${game.poster}" alt="${game.title}">
+                                </div>
+                                <div class="game-card-content">
+                                    <h3>${game.title}</h3>
+                                    <p class="game-card-desc">${game.description}</p>
+                                    <div class="game-card-actions">
+                                        <button class="btn btn-wishlist-remove btn-wishlist-toggle" data-game-id="${game.id}">Убрать</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        wishlistGrid.innerHTML += card;
+                    }
+                });
+            }
+
+            function renderFriends() {
+                friendsList.innerHTML = '';
+                
+                if (state.friends.length === 0) {
+                    friendsList.innerHTML = '<p>У вас пока нет друзей. Добавьте первого друга!</p>';
+                    return;
+                }
+
+                state.friends.forEach((friend, index) => {
+                    const friendCard = `
+                        <div class="friend-card">
+                            <img src="${friend.avatar || 'https://i.imgur.com/4Yj2aBq.png'}" alt="${friend.name}" class="friend-avatar">
+                            <div class="friend-info">
+                                <div class="friend-name">${friend.name}</div>
+                                <div class="friend-status ${friend.statusClass || 'status-online'}">${friend.status || 'В сети'}</div>
+                            </div>
+                            <button class="btn btn-wishlist-remove btn-remove-friend" data-friend-index="${index}">Удалить</button>
+                        </div>
+                    `;
+                    friendsList.innerHTML += friendCard;
+                });
+            }
+
+            function renderProfile() {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                profileId.textContent = user.id;
+                profileUsername.textContent = user.username;
+                const displayName = user.profileName || user.username;
+                profileNameDisplay.textContent = displayName;
+                profileDisplayName.textContent = displayName;
+                
+                if (user.avatarUrl) {
+                    profileAvatar.src = user.avatarUrl;
+                }
+                
+                profileGameCount.textContent = user.library.length;
+                profileFriendsCount.textContent = state.friends.length;
+                profileWishlistCount.textContent = user.wishlist.length;
+                profileWalletBalance.textContent = user.walletBalance;
+                
+                profileNameInput.value = user.profileName || '';
+                if (user.avatarUrl) {
+                    profileAvatarUrl.value = user.avatarUrl;
+                }
+                
+                // Расчет времени активности
+                const totalHours = user.library.length * 5; // Пример: 5 часов на игру
+                profileRecentActivity.textContent = `${totalHours} ч за последние 2 недели`;
+            }
+
+            function updateNavWallet() {
+                const user = getCurrentUser();
+                if (user) {
+                    navWalletBalance.textContent = formatBalance(user.walletBalance);
+                    navUserGreeting.textContent = `Привет, ${user.profileName || user.username}!`;
+                }
+            }
+
+            // Обработчики
+            function handleLogin(e) {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+
+                const user = state.users.find(u => u.username === username && u.password === password);
+
+                if (user) {
+                    state.currentUser = user.id;
+                    localStorage.setItem('cubgamesSession', user.id);
+                    navigateTo('page-store');
+                } else {
+                    alert('Неверный никнейм или пароль!');
+                }
+            }
+
+            function handleRegister(e) {
+                e.preventDefault();
+                const username = document.getElementById('register-username').value;
+                const password = document.getElementById('register-password').value;
+
+                if (state.users.some(u => u.username === username)) {
+                    alert('Пользователь с таким никнеймом уже существует!');
+                    return;
+                }
+
+                const newUser = {
+                    id: Date.now(),
+                    username: username,
+                    password: password,
+                    profileName: username,
+                    avatarUrl: '',
+                    walletBalance: 0,
+                    library: [],
+                    wishlist: []
+                };
+
+                state.users.push(newUser);
+                saveUsers();
+                
+                alert('Регистрация прошла успешно! Теперь вы можете войти.');
+                navigateTo('page-login');
+            }
+
+            function handleLogout() {
+                state.currentUser = null;
+                localStorage.removeItem('cubgamesSession');
+                navigateTo('page-login');
+            }
+
+            function handleBuyGame(gameId, finalPrice) {
+                const user = getCurrentUser();
+                const game = GAMES_DATABASE.find(g => g.id === gameId);
+                
+                if (!user || !game) return;
+                
+                if (user.library.includes(gameId)) {
+                    alert('Эта игра уже в вашей библиотеке!');
+                    return;
+                }
+                
+                if (user.walletBalance < finalPrice) {
+                    alert('Недостаточно средств! Пополните баланс с помощью ключа.');
+                    return;
+                }
+                
+                user.walletBalance -= finalPrice;
+                user.library.push(gameId);
+                
+                const wishlistIndex = user.wishlist.indexOf(gameId);
+                if (wishlistIndex > -1) {
+                    user.wishlist.splice(wishlistIndex, 1);
+                }
+                
+                saveUsers();
+                updateNavWallet();
+                alert(`Игра "${game.title}" куплена и добавлена в библиотеку!`);
+                
+                renderStore();
+                if (document.querySelector('.page.active').id === 'page-wishlist') {
+                    renderWishlist();
+                }
+            }
+
+            function handleWishlistToggle(gameId) {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                const index = user.wishlist.indexOf(gameId);
+                if (index > -1) {
+                    user.wishlist.splice(index, 1);
+                } else {
+                    user.wishlist.push(gameId);
+                }
+                
+                saveUsers();
+                
+                const activePage = document.querySelector('.page.active').id;
+                if (activePage === 'page-store') {
+                    renderStore();
+                } else if (activePage === 'page-wishlist') {
+                    renderWishlist();
+                }
+            }
+
+            function handleAddFriend(e) {
+                e.preventDefault();
+                const friendName = document.getElementById('friend-name').value.trim();
+                const friendAvatar = document.getElementById('friend-avatar').value.trim();
+                
+                if (!friendName) {
+                    alert('Введите имя друга!');
+                    return;
+                }
+                
+                const newFriend = {
+                    name: friendName,
+                    avatar: friendAvatar || 'https://i.imgur.com/4Yj2aBq.png',
+                    status: 'В сети',
+                    statusClass: 'status-online'
+                };
+                
+                state.friends.push(newFriend);
+                saveUsers();
+                renderFriends();
+                
+                document.getElementById('friend-name').value = '';
+                document.getElementById('friend-avatar').value = '';
+                alert(`Друг ${friendName} добавлен!`);
+            }
+
+            function handleRemoveFriend(friendIndex) {
+                if (confirm('Удалить этого друга?')) {
+                    state.friends.splice(friendIndex, 1);
+                    saveUsers();
+                    renderFriends();
+                }
+            }
+
+            function handleKeyActivation() {
+                const key = keyActivationInput.value.trim().toUpperCase();
+                if (!key) {
+                    alert('Введите ключ активации!');
+                    return;
+                }
+                
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                const keyData = state.activeKeys[key];
+                
+                if (!keyData) {
+                    alert('Неверный ключ!');
+                    return;
+                }
+                
+                if (keyData.used) {
+                    alert('Этот ключ уже был использован!');
+                    return;
+                }
+                
+                if (keyData.type === 'balance') {
+                    user.walletBalance += keyData.amount;
+                    keyData.used = true;
+                    saveUsers();
+                    
+                    alert(`Баланс пополнен на ${keyData.amount} руб.! Новый баланс: ${user.walletBalance} руб.`);
+                    updateNavWallet();
+                    
+                } else if (keyData.type === 'game') {
+                    if (!user.library.includes(keyData.gameId)) {
+                        user.library.push(keyData.gameId);
+                        keyData.used = true;
+                        saveUsers();
+                        
+                        const game = GAMES_DATABASE.find(g => g.id === keyData.gameId);
+                        alert(`Игра "${game.title}" добавлена в вашу библиотеку!`);
+                    } else {
+                        alert('Эта игра уже есть в вашей библиотеке!');
+                    }
+                }
+                
+                keyActivationInput.value = '';
+                
+                const activePage = document.querySelector('.page.active').id;
+                if (activePage === 'page-store') {
+                    renderStore();
+                } else if (activePage === 'page-library') {
+                    renderLibrary();
+                } else if (activePage === 'page-profile') {
+                    renderProfile();
+                }
+            }
+
+            function launchGame(gameUrl) {
+                if (!gameUrl || gameUrl.trim() === "") {
+                    alert("Эта игра еще не доступна для запуска!");
+                    return;
+                }
+                
+                const gameWindow = window.open(gameUrl, '_blank');
+                if (!gameWindow) {
+                    alert('Пожалуйста, разрешите всплывающие окна для запуска игр!');
+                    const gameFrame = document.createElement('iframe');
+                    gameFrame.src = gameUrl;
+                    gameFrame.style.width = '100%';
+                    gameFrame.style.height = '600px';
+                    gameFrame.style.border = 'none';
+                    gameFrame.style.borderRadius = '8px';
+                    gameFrame.style.marginTop = '20px';
+                    
+                    const libraryPage = document.getElementById('page-library');
+                    libraryPage.appendChild(gameFrame);
+                }
+            }
+
+            // Инициализация
+            function init() {
+                loadUsers();
+                
+                const sessionId = localStorage.getItem('cubgamesSession');
+                if (sessionId) {
+                    const user = state.users.find(u => u.id === parseInt(sessionId));
+                    if (user) {
+                        state.currentUser = user.id;
+                        navigateTo('page-store');
+                    } else {
+                        navigateTo('page-login');
+                    }
+                } else {
+                    navigateTo('page-login');
+                }
+                
+                startSaleCountdown();
+                
+                loginForm.addEventListener('submit', handleLogin);
+                registerForm.addEventListener('submit', handleRegister);
+                logoutButton.addEventListener('click', handleLogout);
+                
+                profileForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const user = getCurrentUser();
+                    if (user) {
+                        user.profileName = profileNameInput.value;
+                        user.avatarUrl = profileAvatarUrl.value;
+                        saveUsers();
+                        updateNavWallet();
+                        renderProfile();
+                        alert('Профиль обновлен!');
+                    }
+                });
+                
+                addFriendForm.addEventListener('submit', handleAddFriend);
+                
+                keyActivationBtn.addEventListener('click', handleKeyActivation);
+                keyActivationInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleKeyActivation();
+                });
+                
+                showRegisterLink.addEventListener('click', () => navigateTo('page-register'));
+                showLoginLink.addEventListener('click', () => navigateTo('page-login'));
+                
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        navigateTo(e.target.dataset.page);
+                    });
+                });
+                
+                app.addEventListener('click', (e) => {
+                    const target = e.target.closest('button');
+                    if (!target) return;
+                    
+                    if (target.classList.contains('btn-buy-game')) {
+                        const gameId = parseInt(target.dataset.gameId);
+                        const finalPrice = parseInt(target.dataset.finalPrice);
+                        handleBuyGame(gameId, finalPrice);
+                    }
+                    
+                    if (target.classList.contains('btn-wishlist-toggle')) {
+                        const gameId = parseInt(target.dataset.gameId);
+                        handleWishlistToggle(gameId);
+                    }
+                    
+                    if (target.classList.contains('btn-play-game')) {
+                        const gameUrl = target.dataset.gameUrl;
+                        launchGame(gameUrl);
+                    }
+                    
+                    if (target.classList.contains('btn-remove-friend')) {
+                        const friendIndex = parseInt(target.dataset.friendIndex);
+                        handleRemoveFriend(friendIndex);
+                    }
+                });
+            }
+
+            // Запуск приложения
+            init();
+        });
+    </script>
+</body>
+</html>
