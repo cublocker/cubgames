@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblux</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h2>Зарегистрироваться</h2>
+                <p>Начни создавать свой мир</p>
+            </div>
+            
+            <div class="form-group">
+                <label>День рождения</label>
+                <div class="date-selects">
+                    <select><option>Месяц</option><option>Январь</option><option>Май</option></select>
+                    <select><option>День</option><option>1</option><option>15</option></select>
+                    <select><option>Год</option><option>2010</option><option>2012</option></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" id="username-input" placeholder="Не используйте настоящее имя" value="RobloxPlayer123">
+            </div>
+
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" placeholder="Минимум 8 символов" value="password">
+            </div>
+
+            <div class="gender-select">
+                <button class="gender-btn selected">♂</button>
+                <button class="gender-btn">♀</button>
+            </div>
+
+            <button id="signup-btn" class="main-btn">Зарегистрироваться</button>
+            <div class="login-footer">Уже есть аккаунт? <span class="link">Войти</span></div>
+        </div>
+    </div>
+
+    <div id="app-interface" class="hidden">
+        <nav class="top-bar">
+            <div class="nav-left">
+                <img src="Roblux.jpg" class="nav-logo">
+                <span class="nav-item active">Игры</span>
+                <span class="nav-item">Магазин</span>
+                <span class="nav-item">Создать</span>
+            </div>
+            <div class="nav-right">
+                <div class="user-display"><span id="display-name">User</span></div>
+            </div>
+        </nav>
+
+        <div id="discovery-page">
+            <h2 class="section-title">Популярные плейсы</h2>
+            <div class="games-grid">
+                <div class="game-card" onclick="openGameDetails('rainbow')">
+                    <div class="card-thumb rainbow-thumb"></div>
+                    <div class="card-info">
+                        <div class="card-title">Mega Rainbow Obby</div>
+                        <div class="card-stats">👥 15.2K &nbsp; 👍 94%</div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="openGameDetails('glass')">
+                    <div class="card-thumb glass-thumb"></div>
+                    <div class="card-info">
+                        <div class="card-title">Glass Bridge Challenge</div>
+                        <div class="card-stats">👥 8.4K &nbsp; 👍 88%</div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="openGameDetails('space')">
+                    <div class="card-thumb space-thumb"></div>
+                    <div class="card-info">
+                        <div class="card-title">Space Parkour (Low Gravity)</div>
+                        <div class="card-stats">👥 3.1K &nbsp; 👍 91%</div>
+                    </div>
+                </div>
+                <div class="game-card" onclick="openGameDetails('lava')">
+                    <div class="card-thumb lava-thumb"></div>
+                    <div class="card-info">
+                        <div class="card-title">The Floor is Lava</div>
+                        <div class="card-stats">👥 22K &nbsp; 👍 98%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <div id="modal-thumb" class="modal-thumb"></div>
+                <div class="modal-details">
+                    <h1 id="modal-title">Title</h1>
+                    <p id="modal-desc">Description</p>
+                    <button id="play-btn-main" class="play-button-large">▶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-hud" class="hidden">
+        <div class="roblox-menu-icon" id="menu-icon-btn">
+            <img src="Roblux.jpg">
+        </div>
+        <div class="leaderboard">
+            <div class="lb-header">Игроки</div>
+            <div class="lb-row"><span id="hud-username">You</span> <span class="lb-score">100</span></div>
+            <div class="lb-row">Noob123 <span class="lb-score">20</span></div>
+            <div class="lb-row">ProGamer <span class="lb-score">550</span></div>
+        </div>
+        <div id="checkpoint-msg">Чекпоинт!</div>
+    </div>
+
+    <div id="esc-menu" class="hidden">
+        <div class="esc-content">
+            <div class="esc-tabs">
+                <button class="tab-btn active" onclick="switchTab('players')">Игроки</button>
+                <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
+                <button class="tab-btn leave-btn" onclick="leaveGame()">Выйти (Leave)</button>
+            </div>
+
+            <div id="tab-players" class="tab-pane">
+                <h3>Люди на сервере</h3>
+                <ul class="player-list-esc">
+                    <li><div class="avatar-circle"></div> <span id="esc-username">You</span></li>
+                    <li><div class="avatar-circle"></div> Guest 666</li>
+                    <li><div class="avatar-circle"></div> BuilderMan</li>
+                </ul>
+            </div>
+
+            <div id="tab-settings" class="tab-pane hidden">
+                <h3>Настройки графики</h3>
+                
+                <div class="setting-row">
+                    <span>Тени (Shadows)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="shadow-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <span>FOV Камеры</span>
+                    <input type="range" min="60" max="110" value="75" id="fov-slider">
+                </div>
+
+                <div class="setting-row">
+                    <span>Громкость</span>
+                    <input type="range" min="0" max="100" value="50">
+                </div>
+
+                <button class="resume-btn" onclick="toggleEscMenu()">Вернуться (Resume)</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
