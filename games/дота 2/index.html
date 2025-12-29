@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini MOBA 3D</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <div id="hero-select" class="overlay">
+    <div class="panel">
+      <h2>Выбери героя</h2>
+      <div id="hero-list"></div>
+      <div id="hero-preview"></div>
+    </div>
+  </div>
+
+  <div id="ui">
+    <div id="scoreboard">
+      <div>Команда A: <span id="scoreA">0</span></div>
+      <div>Команда B: <span id="scoreB">0</span></div>
+    </div>
+    <div id="hero-portrait">
+      <div id="hero-name">Hero</div>
+      <div class="bar hp"><div id="hp-bar"></div></div>
+      <div class="bar mp"><div id="mp-bar"></div></div>
+      <div id="hp-text"></div>
+      <div id="mp-text"></div>
+    </div>
+    <div id="abilities">
+      <div class="ability" id="ab-q" data-key="Q"><span>Q</span><div class="cd" id="cd-q"></div></div>
+      <div class="ability" id="ab-w" data-key="W"><span>W</span><div class="cd" id="cd-w"></div></div>
+      <div class="ability" id="ab-e" data-key="E"><span>E</span><div class="cd" id="cd-e"></div></div>
+      <div class="ability" id="ab-r" data-key="R"><span>R</span><div class="cd" id="cd-r"></div></div>
+    </div>
+    <div id="inventory">
+      <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+    </div>
+    <canvas id="minimap" width="220" height="220"></canvas>
+  </div>
+
+  <div id="end-screen" class="hidden">
+    <div id="end-text"></div>
+    <button id="restart">Перезапустить</button>
+  </div>
+
+  <div id="ability-tooltip" class="hidden"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>
