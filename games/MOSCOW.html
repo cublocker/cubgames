@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Московский курьер 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* Экран загрузки */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loader-container {
+            text-align: center;
+            color: white;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 5px solid #333;
+            border-top: 5px solid #4cc9f0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #4cc9f0;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4cc9f0, #e94560);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        #start-button {
+            background: linear-gradient(135deg, #4cc9f0, #e94560);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+            transition: all 0.3s;
+        }
+
+        #start-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+        }
+
+        /* Контейнер игры */
+        #game-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Телефон */
+        .phone {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background: #111;
+            border-radius: 20px;
+            padding: 15px;
+            pointer-events: all;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            border: 2px solid #333;
+        }
+
+        .phone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .phone-title {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .phone-time {
+            color: #4cc9f0;
+            font-size: 14px;
+        }
+
+        .orders-list {
+            height: 350px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .order {
+            background: #222;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #4cc9f0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .order:hover {
+            background: #2a2a2a;
+            transform: translateX(-3px);
+        }
+
+        .order.active {
+            border-left-color: #e94560;
+            background: #2a2a2a;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .order-title {
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .order-reward {
+            color: #ffaa00;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .order-address {
+            color: #ccc;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .order-time {
+            color: #e94560;
+            font-size: 11px;
+        }
+
+        /* Статистика */
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 200px;
+            pointer-events: all;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .stat-label {
+            color: #aaa;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .stars {
+            color: #ffaa00;
+            font-size: 18px;
+            margin-right: 8px;
+        }
+
+        .rating-value {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Таймер */
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 350px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #4cc9f0;
+            font-size: 20px;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+            pointer-events: all;
+        }
+
+        /* Кнопки управления */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            pointer-events: all;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4cc9f0, #e94560);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* Указатель направления */
+        .direction-pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.8);
+            z-index: 50;
+            pointer-events: none;
+            display: none;
+        }
+
+        .distance-display {
+            position: absolute;
+            top: calc(50% + 40px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* Уведомления */
+        .notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+            min-width: 300px;
+            border: 2px solid #4cc9f0;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
+            pointer-events: all;
+        }
+
+        .notification h2 {
+            color: #4cc9f0;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .notification p {
+            color: #ccc;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .notification button {
+            background: linear-gradient(135deg, #e94560, #4cc9f0);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Чаевые */
+        .tip-notification {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffaa00, #ff5500);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Маркеры на карте */
+        .map-marker {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #e94560;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 15px #e94560;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            pointer-events: none;
+            animation: pulse 1.5s infinite;
+            display: none;
+        }
+
+        .map-marker::before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .map-marker.delivery {
+            background: #4cc9f0;
+            box-shadow: 0 0 15px #4cc9f0;
+        }
+
+        .marker-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Зона доставки */
+        .delivery-zone {
+            position: absolute;
+            border: 3px dashed #4cc9f0;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 49;
+            display: none;
+            animation: zonePulse 2s infinite;
+        }
+
+        @keyframes zonePulse {
+            0% { border-color: rgba(76, 201, 240, 0.5); }
+            50% { border-color: rgba(76, 201, 240, 1); }
+            100% { border-color: rgba(76, 201, 240, 0.5); }
+        }
+
+        /* Индикатор скорости */
+        .speedometer {
+            position: absolute;
+            bottom: 150px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* Индикатор ускорения */
+        .boost-indicator {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            background: rgba(233, 69, 96, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+            pointer-events: none;
+        }
+
+        /* Меню паузы */
+        .pause-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            pointer-events: all;
+        }
+
+        .pause-title {
+            color: #4cc9f0;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+
+        .pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #4cc9f0, #e94560);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 200px;
+            transition: all 0.3s;
+        }
+
+        .pause-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+        }
+
+        /* Управление на экране */
+        .controls-info {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .controls-info div {
+            margin: 3px 0;
+        }
+
+        .controls-info kbd {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 2px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <div class="loading-text" id="loading-text">Загрузка игры...</div>
+            <div class="progress-bar">
+                <div class="progress" id="loading-progress"></div>
+            </div>
+            <button id="start-button">НАЧАТЬ ИГРУ</button>
+        </div>
+    </div>
+
+    <!-- Основной контейнер игры -->
+    <div id="game-container">
+        <!-- Интерфейс -->
+        <div id="ui">
+            <!-- Статистика -->
+            <div class="stats">
+                <div class="stat-row">
+                    <span class="stat-label">Баланс:</span>
+                    <span class="stat-value" id="balance">1000 ₽</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Доставлено:</span>
+                    <span class="stat-value" id="delivered">0</span>
+                </div>
+                <div class="rating">
+                    <div class="stars" id="stars">★★★★★</div>
+                    <div class="rating-value" id="rating">5.0</div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ускорения:</span>
+                    <span class="stat-value" id="boosts">3</span>
+                </div>
+            </div>
+
+            <!-- Таймер -->
+            <div class="timer" id="timer">--:--</div>
+
+            <!-- Указатель направления -->
+            <div class="direction-pointer" id="direction-pointer">➤</div>
+            <div class="distance-display" id="distance-display"></div>
+
+            <!-- Спидометр -->
+            <div class="speedometer" id="speedometer">0 км/ч</div>
+
+            <!-- Индикатор ускорения -->
+            <div class="boost-indicator" id="boost-indicator">🚀 Ускорение!</div>
+
+            <!-- Кнопки управления -->
+            <div class="controls">
+                <button id="accept-btn" onclick="acceptOrder()">Принять заказ</button>
+                <button id="complete-btn" onclick="completeDelivery()" disabled>Завершить</button>
+                <button id="boost-btn" onclick="useBoost()">Ускорение (3)</button>
+                <button id="pause-btn" onclick="togglePause()">Пауза</button>
+            </div>
+
+            <!-- Подсказка управления -->
+            <div class="controls-info">
+                <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> - Движение</div>
+                <div><kbd>E</kbd> - Взаимодействие</div>
+                <div><kbd>SPACE</kbd> - Ускорение</div>
+                <div><kbd>ESC</kbd> - Пауза</div>
+            </div>
+
+            <!-- Телефон -->
+            <div class="phone">
+                <div class="phone-header">
+                    <div class="phone-title">📱 Заказы</div>
+                    <div class="phone-time" id="phone-time">12:00</div>
+                </div>
+                <div class="orders-list" id="orders-list">
+                    <!-- Заказы загружаются через JS -->
+                </div>
+            </div>
+
+            <!-- Уведомление о чаевых -->
+            <div class="tip-notification" id="tip-notification"></div>
+
+            <!-- Основное уведомление -->
+            <div class="notification" id="notification">
+                <h2 id="notification-title">Заголовок</h2>
+                <p id="notification-text">Текст уведомления</p>
+                <button onclick="closeNotification()">ОК</button>
+            </div>
+
+            <!-- Меню паузы -->
+            <div class="pause-menu" id="pause-menu">
+                <h1 class="pause-title">МОСКОВСКИЙ КУРЬЕР</h1>
+                <div class="pause-buttons">
+                    <button class="pause-btn" onclick="togglePause()">Продолжить</button>
+                    <button class="pause-btn" onclick="restartGame()">Начать заново</button>
+                    <button class="pause-btn" onclick="showInstructions()">Инструкция</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Инициализация загрузки
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const gameContainer = document.getElementById('game-container');
+            const loadingText = document.getElementById('loading-text');
+            const loadingProgress = document.getElementById('loading-progress');
+            const startButton = document.getElementById('start-button');
+            
+            let progress = 0;
+            
+            // Имитация загрузки
+            const loadInterval = setInterval(() => {
+                progress += 2;
+                loadingProgress.style.width = progress + '%';
+                
+                if (progress <= 30) {
+                    loadingText.textContent = "Загрузка 3D движка...";
+                } else if (progress <= 60) {
+                    loadingText.textContent = "Создание Москвы...";
+                } else if (progress <= 90) {
+                    loadingText.textContent = "Инициализация игры...";
+                } else {
+                    loadingText.textContent = "Готово!";
+                    clearInterval(loadInterval);
+                    setTimeout(() => {
+                        startButton.style.display = 'block';
+                    }, 500);
+                }
+            }, 50);
+            
+            startButton.addEventListener('click', function() {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    gameContainer.style.display = 'block';
+                    initGame();
+                }, 500);
+            });
+        });
+
+        // Основная игра
+        let scene, camera, renderer;
+        let car;
+        let keys = {};
+        let gameState = {
+            balance: 1000,
+            delivered: 0,
+            rating: 5.0,
+            boosts: 3,
+            currentOrder: null,
+            deliveryTimer: null,
+            deliveryTime: 0,
+            maxDeliveryTime: 0,
+            speed: 0,
+            isBoostActive: false,
+            isPaused: false,
+            playerPosition: { x: 0, z: 0 },
+            velocity: { x: 0, z: 0 },
+            orders: [
+                { 
+                    id: 1, 
+                    address: "Тверская улица, 10", 
+                    reward: 200, 
+                    time: 180, 
+                    location: { x: 100, z: 0 },
+                    zoneRadius: 15
+                },
+                { 
+                    id: 2, 
+                    address: "Красная площадь, 1", 
+                    reward: 250, 
+                    time: 120, 
+                    location: { x: 40, z: 60 },
+                    zoneRadius: 20
+                },
+                { 
+                    id: 3, 
+                    address: "Москва-Сити", 
+                    reward: 350, 
+                    time: 240, 
+                    location: { x: -80, z: -70 },
+                    zoneRadius: 25
+                },
+                { 
+                    id: 4, 
+                    address: "ВДНХ", 
+                    reward: 180, 
+                    time: 150, 
+                    location: { x: 120, z: -50 },
+                    zoneRadius: 18
+                },
+                { 
+                    id: 5, 
+                    address: "Парк Горького", 
+                    reward: 150, 
+                    time: 90, 
+                    location: { x: -30, z: 80 },
+                    zoneRadius: 15
+                }
+            ]
+        };
+
+        // DOM элементы
+        const balanceEl = document.getElementById('balance');
+        const deliveredEl = document.getElementById('delivered');
+        const starsEl = document.getElementById('stars');
+        const ratingEl = document.getElementById('rating');
+        const boostsEl = document.getElementById('boosts');
+        const timerEl = document.getElementById('timer');
+        const speedometerEl = document.getElementById('speedometer');
+        const boostIndicator = document.getElementById('boost-indicator');
+        const directionPointer = document.getElementById('direction-pointer');
+        const distanceDisplay = document.getElementById('distance-display');
+        const ordersListEl = document.getElementById('orders-list');
+        const acceptBtn = document.getElementById('accept-btn');
+        const completeBtn = document.getElementById('complete-btn');
+        const boostBtn = document.getElementById('boost-btn');
+        const tipNotification = document.getElementById('tip-notification');
+        const notification = document.getElementById('notification');
+        const pauseMenu = document.getElementById('pause-menu');
+
+        function initGame() {
+            // Создаем сцену
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x87CEEB, 50, 500);
+            
+            // Создаем камеру
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 20, 30);
+            
+            // Создаем рендерер
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('game-container').appendChild(renderer.domElement);
+            
+            // Освещение
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 50);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Создаем город Москву
+            createMoscow();
+            
+            // Создаем машину
+            createCar();
+            
+            // Создаем маркеры заказов
+            createMarkers();
+            
+            // Загружаем заказы в телефон
+            loadOrders();
+            
+            // Обновляем время в телефоне
+            updatePhoneTime();
+            setInterval(updatePhoneTime, 60000);
+            
+            // Обработчики событий
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            
+            // Показываем приветствие
+            setTimeout(() => {
+                showNotification('Добро пожаловать!', 
+                    'Вы - курьер в Москве!\n' +
+                    '1. Выберите заказ в телефоне\n' + 
+                    '2. Нажмите "Принять заказ"\n' +
+                    '3. Следуйте по стрелке к точке\n' +
+                    '4. Доставьте быстро для чаевых!');
+            }, 1000);
+            
+            // Запускаем игровой цикл
+            animate();
+        }
+
+        function createMoscow() {
+            // Земля
+            const groundGeometry = new THREE.PlaneGeometry(400, 400, 50, 50);
+            const groundMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x2d5a27,
+                side: THREE.DoubleSide
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // Текстура травы
+            const grassGeometry = new THREE.PlaneGeometry(400, 400);
+            const grassMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x3a7c3a,
+                transparent: true,
+                opacity: 0.3
+            });
+            const grass = new THREE.Mesh(grassGeometry, grassMaterial);
+            grass.rotation.x = -Math.PI / 2;
+            grass.position.y = 0.01;
+            scene.add(grass);
+            
+            // Дороги - Кольцевая (МКАД)
+            createRingRoad(150, 8, 0x333333);
+            
+            // Дороги - Третье транспортное кольцо
+            createRingRoad(100, 6, 0x444444);
+            
+            // Дороги - Садовое кольцо
+            createRingRoad(60, 5, 0x555555);
+            
+            // Главные магистрали
+            createMainRoads();
+            
+            // Создаем разные районы Москвы
+            createDistrict(-120, -120, 'panelki', 15);  // Спальные районы
+            createDistrict(120, -100, 'business', 10);  // Бизнес-центры
+            createDistrict(-100, 120, 'historic', 12);  // Исторический центр
+            createDistrict(100, 100, 'modern', 8);      // Современные районы
+            
+            // Москва-Сити (небоскребы)
+            createMoscowCity(-80, -70);
+            
+            // Красная площадь
+            createRedSquare(40, 60);
+            
+            // Парки
+            createPark(-30, 80, 30);
+            createPark(120, -50, 25);
+            
+            // Река Москва
+            createRiver();
+        }
+
+        function createRingRoad(radius, width, color) {
+            const roadGeometry = new THREE.RingGeometry(radius - width/2, radius + width/2, 64);
+            const roadMaterial = new THREE.MeshLambertMaterial({ color: color });
+            const road = new THREE.Mesh(roadGeometry, roadMaterial);
+            road.rotation.x = -Math.PI / 2;
+            road.position.y = 0.02;
+            road.receiveShadow = true;
+            scene.add(road);
+            
+            // Разметка
+            const lineGeometry = new THREE.RingGeometry(radius - 0.2, radius + 0.2, 64);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            line.rotation.x = -Math.PI / 2;
+            line.position.y = 0.03;
+            scene.add(line);
+        }
+
+        function createMainRoads() {
+            const roadMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
+            
+            // Радиальные дороги
+            const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+            
+            angles.forEach(angle => {
+                const rad = angle * Math.PI / 180;
+                const length = 200;
+                const width = 6;
+                
+                // Дорога
+                const roadGeometry = new THREE.PlaneGeometry(width, length);
+                const road = new THREE.Mesh(roadGeometry, roadMaterial);
+                road.rotation.x = -Math.PI / 2;
+                road.rotation.z = rad;
+                road.position.set(
+                    Math.cos(rad) * length/2,
+                    0.02,
+                    Math.sin(rad) * length/2
+                );
+                road.receiveShadow = true;
+                scene.add(road);
+                
+                // Разметка
+                const points = [];
+                for (let i = -length/2 + 10; i < length/2; i += 20) {
+                    points.push(new THREE.Vector3(
+                        Math.cos(rad) * i,
+                        0.03,
+                        Math.sin(rad) * i
+                    ));
+                    points.push(new THREE.Vector3(
+                        Math.cos(rad) * (i + 10),
+                        0.03,
+                        Math.sin(rad) * (i + 10)
+                    ));
+                }
+                
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                scene.add(line);
+            });
+        }
+
+        function createDistrict(x, z, type, count) {
+            const buildingTypes = {
+                'panelki': { colors: [0x8B7355, 0xA0522D, 0x8B4513], heights: [20, 30, 25] },
+                'business': { colors: [0x4682B4, 0x4169E1, 0x1E90FF], heights: [40, 50, 60] },
+                'historic': { colors: [0xB8860B, 0xDAA520, 0xFFD700], heights: [15, 20, 25] },
+                'modern': { colors: [0x2F4F4F, 0x708090, 0x778899], heights: [30, 35, 40] }
+            };
+            
+            const typeInfo = buildingTypes[type];
+            
+            for (let i = 0; i < count; i++) {
+                const width = 8 + Math.random() * 12;
+                const height = typeInfo.heights[Math.floor(Math.random() * typeInfo.heights.length)];
+                const depth = 8 + Math.random() * 12;
+                const color = typeInfo.colors[Math.floor(Math.random() * typeInfo.colors.length)];
+                
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshLambertMaterial({ color: color });
+                const building = new THREE.Mesh(geometry, material);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 30 + Math.random() * 40;
+                
+                building.position.set(
+                    x + Math.cos(angle) * distance,
+                    height/2,
+                    z + Math.sin(angle) * distance
+                );
+                
+                building.castShadow = true;
+                building.receiveShadow = true;
+                
+                // Добавляем окна
+                addWindows(building, width, height, depth);
+                
+                scene.add(building);
+            }
+        }
+
+        function addWindows(building, width, height, depth) {
+            const windowMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xFFFF00,
+                emissive: 0x222200
+            });
+            
+            const windowSize = 0.8;
+            const spacing = 2;
+            
+            // Окна на всех сторонах
+            for (let y = 1; y < height - 2; y += spacing) {
+                for (let x = -width/2 + 1; x < width/2 - 1; x += spacing) {
+                    if (Math.random() > 0.4) {
+                        const windowGeometry = new THREE.PlaneGeometry(windowSize, windowSize);
+                        const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                        window.position.set(x, y, depth/2 + 0.1);
+                        building.add(window);
+                        
+                        const window2 = new THREE.Mesh(windowGeometry, windowMaterial);
+                        window2.position.set(x, y, -depth/2 - 0.1);
+                        window2.rotation.y = Math.PI;
+                        building.add(window2);
+                    }
+                }
+                
+                for (let z = -depth/2 + 1; z < depth/2 - 1; z += spacing) {
+                    if (Math.random() > 0.4) {
+                        const windowGeometry = new THREE.PlaneGeometry(windowSize, windowSize);
+                        const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                        window.position.set(width/2 + 0.1, y, z);
+                        window.rotation.y = Math.PI / 2;
+                        building.add(window);
+                        
+                        const window2 = new THREE.Mesh(windowGeometry, windowMaterial);
+                        window2.position.set(-width/2 - 0.1, y, z);
+                        window2.rotation.y = -Math.PI / 2;
+                        building.add(window2);
+                    }
+                }
+            }
+        }
+
+        function createMoscowCity(x, z) {
+            const towers = [
+                { height: 300, width: 30, color: 0x1E90FF },
+                { height: 250, width: 25, color: 0x4169E1 },
+                { height: 280, width: 28, color: 0x0000CD },
+                { height: 320, width: 32, color: 0x00BFFF },
+                { height: 270, width: 27, color: 0x4682B4 }
+            ];
+            
+            towers.forEach((tower, i) => {
+                const angle = (i / towers.length) * Math.PI * 2;
+                const distance = 20;
+                
+                const geometry = new THREE.BoxGeometry(tower.width, tower.height, tower.width);
+                const material = new THREE.MeshLambertMaterial({ 
+                    color: tower.color,
+                    metalness: 0.7,
+                    roughness: 0.2
+                });
+                
+                const building = new THREE.Mesh(geometry, material);
+                building.position.set(
+                    x + Math.cos(angle) * distance,
+                    tower.height/2,
+                    z + Math.sin(angle) * distance
+                );
+                
+                building.castShadow = true;
+                scene.add(building);
+                
+                // Стеклянные стены
+                const glassGeometry = new THREE.BoxGeometry(tower.width - 2, tower.height - 5, tower.width - 2);
+                const glassMaterial = new THREE.MeshLambertMaterial({
+                    color: 0x87CEEB,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                
+                const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+                glass.position.y = 2.5;
+                building.add(glass);
+            });
+        }
+
+        function createRedSquare(x, z) {
+            // Красная площадь
+            const squareGeometry = new THREE.PlaneGeometry(40, 30);
+            const squareMaterial = new THREE.MeshLambertMaterial({ color: 0xB22222 });
+            const square = new THREE.Mesh(squareGeometry, squareMaterial);
+            square.rotation.x = -Math.PI / 2;
+            square.position.set(x, 0.01, z);
+            scene.add(square);
+            
+            // Кремль
+            const wallGeometry = new THREE.BoxGeometry(50, 15, 5);
+            const wallMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 });
+            
+            for (let i = 0; i < 4; i++) {
+                const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+                const angle = (i * Math.PI) / 2;
+                
+                wall.position.set(
+                    x + Math.cos(angle) * 22.5,
+                    7.5,
+                    z + Math.sin(angle) * 17.5
+                );
+                wall.rotation.y = angle;
+                wall.castShadow = true;
+                scene.add(wall);
+            }
+            
+            // Спасская башня
+            const towerGeometry = new THREE.BoxGeometry(8, 40, 8);
+            const towerMaterial = new THREE.MeshLambertMaterial({ color: 0xFF4500 });
+            const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+            tower.position.set(x, 20, z - 10);
+            tower.castShadow = true;
+            scene.add(tower);
+        }
+
+        function createPark(x, z, size) {
+            const parkGeometry = new THREE.PlaneGeometry(size * 2, size * 2);
+            const parkMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const park = new THREE.Mesh(parkGeometry, parkMaterial);
+            park.rotation.x = -Math.PI / 2;
+            park.position.set(x, 0.01, z);
+            scene.add(park);
+            
+            // Деревья
+            for (let i = 0; i < 20; i++) {
+                const tree = createTree();
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * size;
+                
+                tree.position.set(
+                    x + Math.cos(angle) * distance,
+                    0,
+                    z + Math.sin(angle) * distance
+                );
+                scene.add(tree);
+            }
+        }
+
+        function createTree() {
+            const treeGroup = new THREE.Group();
+            
+            // Ствол
+            const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.7, 3, 8);
+            const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            treeGroup.add(trunk);
+            
+            // Крона
+            const crownGeometry = new THREE.SphereGeometry(3, 8, 8);
+            const crownMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+            crown.position.y = 3;
+            treeGroup.add(crown);
+            
+            return treeGroup;
+        }
+
+        function createRiver() {
+            const riverGeometry = new THREE.PlaneGeometry(400, 30);
+            const riverMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x4682B4,
+                transparent: true,
+                opacity: 0.7
+            });
+            const river = new THREE.Mesh(riverGeometry, riverMaterial);
+            river.rotation.x = -Math.PI / 2;
+            river.position.set(0, 0.02, 0);
+            river.rotation.z = Math.PI / 4;
+            scene.add(river);
+        }
+
+        function createCar() {
+            const carGroup = new THREE.Group();
+            
+            // Кузов
+            const bodyGeometry = new THREE.BoxGeometry(2.5, 1, 5);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xFF0000,
+                metalness: 0.3,
+                roughness: 0.4
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            carGroup.add(body);
+            
+            // Кабина
+            const cabinGeometry = new THREE.BoxGeometry(2, 1.2, 2);
+            const cabinMaterial = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
+            cabin.position.y = 0.9;
+            cabin.position.z = -1;
+            carGroup.add(cabin);
+            
+            // Лобовое стекло
+            const windshieldGeometry = new THREE.PlaneGeometry(1.8, 0.8);
+            const windshieldMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x87CEEB,
+                transparent: true,
+                opacity: 0.3
+            });
+            const windshield = new THREE.Mesh(windshieldGeometry, windshieldMaterial);
+            windshield.position.set(0, 1.3, 0.1);
+            windshield.rotation.x = 0.3;
+            carGroup.add(windshield);
+            
+            // Колеса
+            const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            
+            const positions = [
+                { x: 0.8, y: -0.5, z: 1.5 },
+                { x: -0.8, y: -0.5, z: 1.5 },
+                { x: 0.8, y: -0.5, z: -1.5 },
+                { x: -0.8, y: -0.5, z: -1.5 }
+            ];
+            
+            positions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(pos.x, pos.y, pos.z);
+                carGroup.add(wheel);
+            });
+            
+            // Фары
+            const lightGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const lightMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xFFFF00,
+                emissive: 0xFFFF00,
+                emissiveIntensity: 0.5
+            });
+            
+            const frontLight1 = new THREE.Mesh(lightGeometry, lightMaterial);
+            frontLight1.position.set(0.6, 0.2, 2.5);
+            carGroup.add(frontLight1);
+            
+            const frontLight2 = new THREE.Mesh(lightGeometry, lightMaterial);
+            frontLight2.position.set(-0.6, 0.2, 2.5);
+            carGroup.add(frontLight2);
+            
+            carGroup.position.set(0, 0.8, 0);
+            carGroup.castShadow = true;
+            scene.add(carGroup);
+            car = carGroup;
+        }
+
+        function createMarkers() {
+            gameState.orders.forEach(order => {
+                // Маркер на карте
+                const marker = document.createElement('div');
+                marker.className = 'map-marker';
+                marker.id = 'marker-' + order.id;
+                
+                const label = document.createElement('div');
+                label.className = 'marker-label';
+                label.textContent = `Заказ #${order.id}`;
+                marker.appendChild(label);
+                
+                document.getElementById('ui').appendChild(marker);
+                
+                // Зона доставки
+                const zone = document.createElement('div');
+                zone.className = 'delivery-zone';
+                zone.id = 'zone-' + order.id;
+                zone.style.width = (order.zoneRadius * 2) + 'px';
+                zone.style.height = (order.zoneRadius * 2) + 'px';
+                document.getElementById('ui').appendChild(zone);
+            });
+        }
+
+        function loadOrders() {
+            ordersListEl.innerHTML = '';
+            gameState.orders.forEach(order => {
+                const orderEl = document.createElement('div');
+                orderEl.className = 'order';
+                orderEl.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-title">Заказ #${order.id}</div>
+                        <div class="order-reward">${order.reward} ₽</div>
+                    </div>
+                    <div class="order-address">${order.address}</div>
+                    <div class="order-time">${order.time} сек</div>
+                `;
+                orderEl.addEventListener('click', () => selectOrder(order.id));
+                ordersListEl.appendChild(orderEl);
+            });
+        }
+
+        function selectOrder(orderId) {
+            document.querySelectorAll('.order').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            const orderEl = document.querySelector(`.order:nth-child(${orderId})`);
+            if (orderEl) {
+                orderEl.classList.add('active');
+                gameState.currentOrder = gameState.orders.find(o => o.id === orderId);
+                acceptBtn.disabled = false;
+                
+                // Показываем маркер заказа
+                updateMarkers();
+            }
+        }
+
+        function updateMarkers() {
+            gameState.orders.forEach(order => {
+                const marker = document.getElementById('marker-' + order.id);
+                const zone = document.getElementById('zone-' + order.id);
+                
+                if (marker && zone) {
+                    // Показываем все маркеры
+                    marker.style.display = 'block';
+                    
+                    // Обновляем позицию маркера на экране
+                    const screenPos = worldToScreen(order.location.x, 0, order.location.z);
+                    if (screenPos) {
+                        marker.style.left = screenPos.x + 'px';
+                        marker.style.top = screenPos.y + 'px';
+                        
+                        zone.style.left = screenPos.x + 'px';
+                        zone.style.top = screenPos.y + 'px';
+                    }
+                    
+                    // Выделяем текущий заказ
+                    if (gameState.currentOrder && gameState.currentOrder.id === order.id) {
+                        marker.classList.add('delivery');
+                        zone.style.display = 'block';
+                    } else {
+                        marker.classList.remove('delivery');
+                        zone.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function worldToScreen(x, y, z) {
+            if (!camera) return null;
+            
+            const vector = new THREE.Vector3(x, y, z);
+            vector.project(camera);
+            
+            const screenX = (vector.x * 0.5 + 0.5) * window.innerWidth;
+            const screenY = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+            
+            return { x: screenX, y: screenY };
+        }
+
+        function acceptOrder() {
+            if (!gameState.currentOrder) {
+                showNotification('Ошибка', 'Сначала выберите заказ в телефоне!');
+                return;
+            }
+            
+            gameState.deliveryTime = gameState.currentOrder.time;
+            gameState.maxDeliveryTime = gameState.currentOrder.time;
+            
+            // Показываем указатель направления
+            directionPointer.style.display = 'block';
+            distanceDisplay.style.display = 'block';
+            
+            // Запускаем таймер
+            startDeliveryTimer();
+            
+            acceptBtn.disabled = true;
+            completeBtn.disabled = false;
+            
+            showNotification('Заказ принят!', 
+                `Доставьте на:\n${gameState.currentOrder.address}\n\n` +
+                `Время: ${gameState.currentOrder.time} сек\n` +
+                `Следуйте по стрелке к точке доставки!`);
+        }
+
+        function startDeliveryTimer() {
+            if (gameState.deliveryTimer) {
+                clearInterval(gameState.deliveryTimer);
+            }
+            
+            gameState.deliveryTimer = setInterval(() => {
+                gameState.deliveryTime--;
+                
+                const minutes = Math.floor(gameState.deliveryTime / 60);
+                const seconds = gameState.deliveryTime % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Меняем цвет при малом времени
+                if (gameState.deliveryTime < 30) {
+                    timerEl.style.color = '#e94560';
+                } else if (gameState.deliveryTime < 60) {
+                    timerEl.style.color = '#ffaa00';
+                } else {
+                    timerEl.style.color = '#4cc9f0';
+                }
+                
+                // Проверяем время
+                if (gameState.deliveryTime <= 0) {
+                    clearInterval(gameState.deliveryTimer);
+                    failDelivery();
+                }
+            }, 1000);
+        }
+
+        function updateDirectionPointer() {
+            if (!gameState.currentOrder || !car) return;
+            
+            const order = gameState.currentOrder;
+            
+            // Вектор от машины к цели
+            const dx = order.location.x - car.position.x;
+            const dz = order.location.z - car.position.z;
+            
+            // Расстояние
+            const distance = Math.sqrt(dx * dx + dz * dz);
+            distanceDisplay.textContent = Math.round(distance) + ' м';
+            
+            // Угол к цели
+            let targetAngle = Math.atan2(dx, dz);
+            
+            // Угол машины
+            const carAngle = car.rotation.y;
+            
+            // Разница углов
+            let angleDiff = targetAngle - carAngle;
+            
+            // Нормализуем угол
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            
+            // Поворачиваем указатель
+            directionPointer.style.transform = `translate(-50%, -50%) rotate(${angleDiff}rad)`;
+            
+            // Показываем/скрываем указатель при близком расстоянии
+            if (distance < 20) {
+                directionPointer.style.display = 'none';
+                distanceDisplay.style.display = 'none';
+                
+                // Показываем сообщение о прибытии
+                if (distance < 15 && !completeBtn.disabled) {
+                    showTip('Вы на месте! Нажмите "Завершить"');
+                }
+            } else {
+                directionPointer.style.display = 'block';
+                distanceDisplay.style.display = 'block';
+            }
+        }
+
+        function completeDelivery() {
+            if (!gameState.currentOrder) return;
+            
+            // Проверяем расстояние до точки
+            const dx = gameState.currentOrder.location.x - car.position.x;
+            const dz = gameState.currentOrder.location.z - car.position.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+            
+            if (distance > gameState.currentOrder.zoneRadius) {
+                showNotification('Слишком далеко!', 
+                    `Подъезжайте ближе к точке!\n` +
+                    `Текущее расстояние: ${Math.round(distance)} м\n` +
+                    `Нужно быть в пределах: ${gameState.currentOrder.zoneRadius} м`);
+                return;
+            }
+            
+            // Расчет награды
+            const timeBonus = gameState.deliveryTime / gameState.maxDeliveryTime;
+            let tip = 0;
+            let ratingChange = 0;
+            
+            if (timeBonus > 0.8) {
+                tip = Math.floor(gameState.currentOrder.reward * 0.3);
+                ratingChange = 0.2;
+                showTip(`Отлично! Супер быстрая доставка! +${tip}₽ чаевых`);
+            } else if (timeBonus > 0.5) {
+                tip = Math.floor(gameState.currentOrder.reward * 0.15);
+                ratingChange = 0.1;
+                showTip(`Хорошо! Быстрая доставка! +${tip}₽ чаевых`);
+            } else if (timeBonus > 0.2) {
+                tip = Math.floor(gameState.currentOrder.reward * 0.05);
+                ratingChange = 0;
+                showTip(`Успели! Вовремя доставили! +${tip}₽ чаевых`);
+            } else {
+                ratingChange = -0.2;
+                showTip('Еле успели! В следующий раз быстрее! Без чаевых');
+            }
+            
+            // Обновляем статистику
+            gameState.balance += gameState.currentOrder.reward + tip;
+            gameState.delivered++;
+            updateRating(ratingChange);
+            
+            // Скрываем указатель
+            directionPointer.style.display = 'none';
+            distanceDisplay.style.display = 'none';
+            
+            // Скрываем маркер
+            const marker = document.getElementById('marker-' + gameState.currentOrder.id);
+            const zone = document.getElementById('zone-' + gameState.currentOrder.id);
+            if (marker) marker.style.display = 'none';
+            if (zone) zone.style.display = 'none';
+            
+            // Обновляем UI
+            updateUI();
+            
+            // Сбрасываем текущий заказ
+            clearInterval(gameState.deliveryTimer);
+            gameState.currentOrder = null;
+            timerEl.textContent = '--:--';
+            timerEl.style.color = '#4cc9f0';
+            
+            acceptBtn.disabled = false;
+            completeBtn.disabled = true;
+            
+            // Проверяем завершение всех заказов
+            if (gameState.delivered >= gameState.orders.length) {
+                setTimeout(() => {
+                    showNotification('Поздравляем!', 
+                        'Вы выполнили все заказы Москвы!\n' +
+                        `Итоговый баланс: ${gameState.balance}₽\n` +
+                        `Рейтинг: ${gameState.rating.toFixed(1)}/5\n\n` +
+                        'Игра перезапускается через 5 секунд...');
+                    setTimeout(restartGame, 5000);
+                }, 1000);
+            }
+        }
+
+        function failDelivery() {
+            showNotification('Время вышло!', 'Заказ отменен. Вы не успели доставить вовремя.');
+            updateRating(-0.3);
+            
+            if (gameState.currentOrder) {
+                const marker = document.getElementById('marker-' + gameState.currentOrder.id);
+                const zone = document.getElementById('zone-' + gameState.currentOrder.id);
+                if (marker) marker.style.display = 'none';
+                if (zone) zone.style.display = 'none';
+                gameState.currentOrder = null;
+            }
+            
+            // Скрываем указатель
+            directionPointer.style.display = 'none';
+            distanceDisplay.style.display = 'none';
+            
+            timerEl.textContent = '--:--';
+            timerEl.style.color = '#4cc9f0';
+            acceptBtn.disabled = false;
+            completeBtn.disabled = true;
+        }
+
+        function useBoost() {
+            if (gameState.boosts <= 0) {
+                showNotification('Нет ускорений', 'Используйте ускорения экономно!');
+                return;
+            }
+            
+            if (gameState.isBoostActive) {
+                showNotification('Ускорение уже активно', 'Подождите пока закончится');
+                return;
+            }
+            
+            gameState.boosts--;
+            gameState.isBoostActive = true;
+            
+            boostIndicator.style.display = 'block';
+            updateUI();
+            
+            setTimeout(() => {
+                gameState.isBoostActive = false;
+                boostIndicator.style.display = 'none';
+                showTip('Ускорение закончилось');
+            }, 10000);
+            
+            showTip('Ускорение активировано на 10 секунд!');
+        }
+
+        function updateRating(change) {
+            gameState.rating += change;
+            gameState.rating = Math.max(0, Math.min(5, gameState.rating));
+            
+            const fullStars = Math.floor(gameState.rating);
+            const hasHalfStar = gameState.rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            
+            starsEl.textContent = 
+                '★'.repeat(fullStars) + 
+                (hasHalfStar ? '½' : '') + 
+                '☆'.repeat(emptyStars);
+            
+            ratingEl.textContent = gameState.rating.toFixed(1);
+        }
+
+        function updateUI() {
+            balanceEl.textContent = gameState.balance + ' ₽';
+            deliveredEl.textContent = gameState.delivered;
+            boostsEl.textContent = gameState.boosts;
+            boostBtn.textContent = `Ускорение (${gameState.boosts})`;
+            
+            // Обновляем скорость
+            const speedKmh = Math.round(Math.sqrt(
+                gameState.velocity.x * gameState.velocity.x + 
+                gameState.velocity.z * gameState.velocity.z
+            ) * 100);
+            
+            let displaySpeed = speedKmh;
+            if (gameState.isBoostActive) displaySpeed *= 2;
+            
+            speedometerEl.textContent = displaySpeed + ' км/ч';
+            if (gameState.isBoostActive) {
+                speedometerEl.style.color = '#e94560';
+            } else if (displaySpeed > 80) {
+                speedometerEl.style.color = '#ffaa00';
+            } else {
+                speedometerEl.style.color = 'white';
+            }
+        }
+
+        function updatePhoneTime() {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                             now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('phone-time').textContent = timeString;
+        }
+
+        function showTip(text) {
+            tipNotification.textContent = text;
+            tipNotification.style.display = 'block';
+            
+            setTimeout(() => {
+                tipNotification.style.display = 'none';
+            }, 3000);
+        }
+
+        function showNotification(title, text) {
+            document.getElementById('notification-title').textContent = title;
+            document.getElementById('notification-text').textContent = text;
+            notification.style.display = 'block';
+        }
+
+        function closeNotification() {
+            notification.style.display = 'none';
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            pauseMenu.style.display = gameState.isPaused ? 'flex' : 'none';
+        }
+
+        function restartGame() {
+            gameState.balance = 1000;
+            gameState.delivered = 0;
+            gameState.rating = 5.0;
+            gameState.boosts = 3;
+            gameState.currentOrder = null;
+            gameState.speed = 0;
+            gameState.velocity = { x: 0, z: 0 };
+            
+            if (gameState.deliveryTimer) {
+                clearInterval(gameState.deliveryTimer);
+            }
+            
+            updateRating(0);
+            updateUI();
+            loadOrders();
+            
+            car.position.set(0, 0.8, 0);
+            car.rotation.y = 0;
+            
+            gameState.playerPosition = { x: 0, z: 0 };
+            
+            timerEl.textContent = '--:--';
+            timerEl.style.color = '#4cc9f0';
+            acceptBtn.disabled = false;
+            completeBtn.disabled = true;
+            
+            directionPointer.style.display = 'none';
+            distanceDisplay.style.display = 'none';
+            
+            document.querySelectorAll('.map-marker, .delivery-zone').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            pauseMenu.style.display = 'none';
+            gameState.isPaused = false;
+            
+            showNotification('Игра перезапущена', 'Удачи в новых заказах по Москве!');
+        }
+
+        function showInstructions() {
+            showNotification('Инструкция', 
+                '🎮 УПРАВЛЕНИЕ:\n' +
+                'W/S - Вперед/Назад\n' +
+                'A/D - Поворот\n' +
+                'E - Взаимодействие (взять/сдать)\n' +
+                'SPACE - Активировать ускорение\n' +
+                'ESC - Меню паузы\n\n' +
+                '🎯 КАК ИГРАТЬ:\n' +
+                '1. Выберите заказ в телефоне (клик)\n' +
+                '2. Нажмите "Принять заказ" или E\n' +
+                '3. Следуйте по стрелке к точке\n' +
+                '4. Подъезжайте близко (15м)\n' +
+                '5. Нажмите "Завершить" или E\n\n' +
+                '💰 ЧАЕВЫЕ:\n' +
+                'Чем быстрее доставка - тем больше чаевых!\n' +
+                'Следите за рейтингом и таймером!'
+            );
+            pauseMenu.style.display = 'none';
+            gameState.isPaused = false;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateMarkers();
+        }
+
+        function onKeyDown(event) {
+            const key = event.key.toLowerCase();
+            keys[key] = true;
+            
+            if (event.key === 'Escape') {
+                togglePause();
+                event.preventDefault();
+            }
+            
+            if (key === 'e') {
+                if (gameState.currentOrder && completeBtn.disabled === false) {
+                    completeDelivery();
+                } else if (acceptBtn.disabled === false) {
+                    acceptOrder();
+                }
+                event.preventDefault();
+            }
+            
+            if (key === ' ') {
+                useBoost();
+                event.preventDefault();
+            }
+        }
+
+        function onKeyUp(event) {
+            keys[event.key.toLowerCase()] = false;
+        }
+
+        function updateCarMovement() {
+            const acceleration = 0.005;
+            const friction = 0.98;
+            const maxSpeed = 0.2;
+            const turnSpeed = 0.05;
+            
+            // Ускорение с бустом
+            let currentAcceleration = acceleration;
+            let currentMaxSpeed = maxSpeed;
+            
+            if (gameState.isBoostActive) {
+                currentAcceleration *= 2;
+                currentMaxSpeed *= 2;
+            }
+            
+            // Движение вперед/назад
+            if (keys['w'] || keys['arrowup']) {
+                gameState.velocity.x -= Math.sin(car.rotation.y) * currentAcceleration;
+                gameState.velocity.z -= Math.cos(car.rotation.y) * currentAcceleration;
+            }
+            
+            if (keys['s'] || keys['arrowdown']) {
+                gameState.velocity.x += Math.sin(car.rotation.y) * currentAcceleration;
+                gameState.velocity.z += Math.cos(car.rotation.y) * currentAcceleration;
+            }
+            
+            // Поворот
+            if (keys['a'] || keys['arrowleft']) {
+                car.rotation.y += turnSpeed;
+            }
+            
+            if (keys['d'] || keys['arrowright']) {
+                car.rotation.y -= turnSpeed;
+            }
+            
+            // Ограничение скорости
+            let speed = Math.sqrt(gameState.velocity.x * gameState.velocity.x + 
+                                 gameState.velocity.z * gameState.velocity.z);
+            
+            if (speed > currentMaxSpeed) {
+                gameState.velocity.x = (gameState.velocity.x / speed) * currentMaxSpeed;
+                gameState.velocity.z = (gameState.velocity.z / speed) * currentMaxSpeed;
+            }
+            
+            // Применение трения
+            gameState.velocity.x *= friction;
+            gameState.velocity.z *= friction;
+            
+            // Движение машины
+            car.position.x += gameState.velocity.x;
+            car.position.z += gameState.velocity.z;
+            
+            // Обновляем позицию игрока
+            gameState.playerPosition.x = car.position.x;
+            gameState.playerPosition.z = car.position.z;
+            
+            // Наклон машины при повороте
+            const turnIntensity = Math.abs(gameState.velocity.x) + Math.abs(gameState.velocity.z);
+            car.rotation.z = -gameState.velocity.x * 0.1;
+            car.rotation.x = gameState.velocity.z * 0.05;
+            
+            // Ограничиваем позицию (чтобы не выехать за карту)
+            const boundary = 180;
+            car.position.x = Math.max(-boundary, Math.min(boundary, car.position.x));
+            car.position.z = Math.max(-boundary, Math.min(boundary, car.position.z));
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (gameState.isPaused) return;
+            
+            // Обновляем движение машины
+            updateCarMovement();
+            
+            // Обновляем указатель направления
+            updateDirectionPointer();
+            
+            // Обновляем маркеры
+            updateMarkers();
+            
+            // Обновляем камеру
+            const cameraDistance = 20;
+            const cameraHeight = 10;
+            
+            camera.position.x = car.position.x + Math.sin(car.rotation.y) * cameraDistance;
+            camera.position.z = car.position.z + Math.cos(car.rotation.y) * cameraDistance;
+            camera.position.y = cameraHeight;
+            camera.lookAt(car.position.x, car.position.y + 2, car.position.z);
+            
+            // Обновляем UI
+            updateUI();
+            
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>

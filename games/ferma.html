@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фермерский симулятор: Садоводство и торговля</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(to bottom right, #e6f7e6, #c2e9c2);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-bottom: 5px solid #4CAF50;
+        }
+        
+        h1 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .game-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-panel {
+            grid-column: 1 / span 2;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f1f8e9;
+            border-radius: 10px;
+            margin: 5px;
+        }
+        
+        .stat i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: #4CAF50;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        
+        .stat-label {
+            margin-left: 5px;
+            color: #666;
+        }
+        
+        .farm-panel {
+            min-height: 500px;
+        }
+        
+        .farm-title {
+            font-size: 1.5rem;
+            color: #2E7D32;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0f2e0;
+        }
+        
+        .farm-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .plot {
+            aspect-ratio: 1;
+            background-color: #f1f8e9;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #c8e6c9;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plot:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .plot.empty {
+            background-color: #f1f8e9;
+        }
+        
+        .plot.planted {
+            background-color: #e8f5e9;
+        }
+        
+        .plant-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .plant-name {
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .growth-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .growth-progress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .time-left {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .market-panel {
+            min-height: 500px;
+        }
+        
+        .market-title {
+            font-size: 1.5rem;
+            color: #2E7D32;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0f2e0;
+        }
+        
+        .market-items {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .market-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .market-item:hover {
+            background-color: #f1f8e9;
+            transform: translateX(5px);
+        }
+        
+        .market-item-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #4CAF50;
+        }
+        
+        .market-item-info {
+            flex: 1;
+        }
+        
+        .market-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .market-item-price {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+        
+        .market-item-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #388E3C;
+        }
+        
+        .btn-secondary {
+            background-color: #FF9800;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #F57C00;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .upgrades-panel {
+            grid-column: 1 / span 2;
+            margin-top: 20px;
+        }
+        
+        .upgrades-title {
+            font-size: 1.5rem;
+            color: #2E7D32;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0f2e0;
+        }
+        
+        .upgrades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .upgrade {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .upgrade-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #2196F3;
+        }
+        
+        .upgrade-info {
+            flex: 1;
+        }
+        
+        .upgrade-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .upgrade-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upgrade-price {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        .messages {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            z-index: 100;
+        }
+        
+        .message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s, fadeOut 0.5s 2.5s forwards;
+        }
+        
+        .message.error {
+            background-color: #f44336;
+        }
+        
+        .message.info {
+            background-color: #2196F3;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            color: #2E7D32;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .plants-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .plant-option {
+            padding: 15px;
+            background-color: #f1f8e9;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .plant-option:hover {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        
+        .plant-option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+        
+        .plant-option-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .plant-option-price {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+        
+        .plant-option-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        @media (max-width: 900px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-panel {
+                grid-column: 1;
+            }
+            
+            .upgrades-panel {
+                grid-column: 1;
+            }
+            
+            .farm-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .farm-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stats-panel {
+                flex-direction: column;
+            }
+            
+            .stat {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tractor"></i> Фермерский симулятор</h1>
+            <p class="subtitle">Выращивайте растения, продавайте урожай и улучшайте свою ферму!</p>
+        </header>
+        
+        <div class="stats-panel panel">
+            <div class="stat">
+                <i class="fas fa-coins"></i>
+                <span class="stat-value" id="money">100</span>
+                <span class="stat-label">монет</span>
+            </div>
+            <div class="stat">
+                <i class="fas fa-seedling"></i>
+                <span class="stat-value" id="seeds">10</span>
+                <span class="stat-label">семян</span>
+            </div>
+            <div class="stat">
+                <i class="fas fa-chart-line"></i>
+                <span class="stat-value" id="level">1</span>
+                <span class="stat-label">уровень</span>
+            </div>
+            <div class="stat">
+                <i class="fas fa-expand-arrows-alt"></i>
+                <span class="stat-value" id="plots">4</span>
+                <span class="stat-label">грядок</span>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <div class="farm-panel panel">
+                <h2 class="farm-title"><i class="fas fa-tree"></i> Ваша ферма</h2>
+                <div class="farm-grid" id="farm-grid">
+                    <!-- Грядки будут добавлены через JavaScript -->
+                </div>
+                <div style="text-align: center;">
+                    <button class="btn btn-primary" id="plant-btn">Посадить растение</button>
+                    <button class="btn btn-secondary" id="harvest-all-btn">Собрать весь урожай</button>
+                </div>
+            </div>
+            
+            <div class="market-panel panel">
+                <h2 class="market-title"><i class="fas fa-store"></i> Рынок</h2>
+                <div class="market-items" id="market-items">
+                    <!-- Товары рынка будут добавлены через JavaScript -->
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" id="sell-all-btn">Продать весь урожай</button>
+                </div>
+            </div>
+            
+            <div class="upgrades-panel panel">
+                <h2 class="upgrades-title"><i class="fas fa-tools"></i> Улучшения</h2>
+                <div class="upgrades-grid" id="upgrades-grid">
+                    <!-- Улучшения будут добавлены через JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для посадки растений -->
+    <div class="modal" id="plant-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Выберите растение для посадки</h2>
+            <div class="plants-grid" id="plants-grid">
+                <!-- Опции растений будут добавлены через JavaScript -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-secondary" id="close-modal-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Контейнер для сообщений -->
+    <div class="messages" id="messages-container"></div>
+    
+    <script>
+        // Игровые данные
+        const gameState = {
+            money: 100,
+            seeds: 10,
+            level: 1,
+            experience: 0,
+            plots: 4,
+            maxPlots: 12,
+            plants: [],
+            upgrades: []
+        };
+
+        // Типы растений
+        const plantTypes = [
+            { id: 1, name: "Морковь", icon: "🥕", price: 10, growTime: 10, sellPrice: 20, seedsCost: 2 },
+            { id: 2, name: "Пшеница", icon: "🌾", price: 15, growTime: 15, sellPrice: 30, seedsCost: 3 },
+            { id: 3, name: "Кукуруза", icon: "🌽", price: 25, growTime: 20, sellPrice: 50, seedsCost: 5 },
+            { id: 4, name: "Помидор", icon: "🍅", price: 30, growTime: 25, sellPrice: 65, seedsCost: 6 },
+            { id: 5, name: "Клубника", icon: "🍓", price: 40, growTime: 30, sellPrice: 85, seedsCost: 8 },
+            { id: 6, name: "Виноград", icon: "🍇", price: 60, growTime: 40, sellPrice: 130, seedsCost: 12 }
+        ];
+
+        // Улучшения
+        const upgrades = [
+            { id: 1, name: "Дополнительная грядка", icon: "🪴", description: "Добавляет одну грядку для посадки растений", price: 100, effect: "addPlot" },
+            { id: 2, name: "Улучшенные семена", icon: "🌱", description: "Уменьшает время роста растений на 10%", price: 200, effect: "fasterGrowth", level: 1 },
+            { id: 3, name: "Удобрение", icon: "🧪", description: "Увеличивает стоимость продажи растений на 15%", price: 300, effect: "betterPrice", level: 1 },
+            { id: 4, name: "Система полива", icon: "💧", description: "Автоматически поливает растения", price: 500, effect: "autoWater" },
+            { id: 5, name: "Теплица", icon: "🏭", description: "Увеличивает доход от продажи на 25%", price: 800, effect: "greenhouse" }
+        ];
+
+        // Переменные для управления игрой
+        let selectedPlot = null;
+        let gameInterval = null;
+
+        // Инициализация игры
+        function initGame() {
+            loadGame();
+            renderFarm();
+            renderMarket();
+            renderUpgrades();
+            updateStats();
+            
+            // Запуск игрового цикла
+            gameInterval = setInterval(gameLoop, 1000);
+            
+            // Назначение обработчиков событий
+            document.getElementById('plant-btn').addEventListener('click', openPlantModal);
+            document.getElementById('close-modal-btn').addEventListener('click', closePlantModal);
+            document.getElementById('sell-all-btn').addEventListener('click', sellAllCrops);
+            document.getElementById('harvest-all-btn').addEventListener('click', harvestAllCrops);
+            
+            // Сохранение игры при закрытии страницы
+            window.addEventListener('beforeunload', saveGame);
+            
+            showMessage("Добро пожаловать на вашу ферму! Начните с посадки моркови на пустых грядках.", "info");
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            updatePlants();
+            updateStats();
+            saveGame();
+        }
+
+        // Обновление растений
+        function updatePlants() {
+            const now = Date.now();
+            let updated = false;
+            
+            gameState.plants.forEach(plant => {
+                if (plant.plantedAt && !plant.ready) {
+                    const elapsed = (now - plant.plantedAt) / 1000; // в секундах
+                    const growTime = plant.growTime * (gameState.upgrades.includes(2) ? 0.9 : 1);
+                    
+                    if (elapsed >= growTime) {
+                        plant.ready = true;
+                        plant.progress = 100;
+                        updated = true;
+                    } else {
+                        plant.progress = (elapsed / growTime) * 100;
+                        plant.timeLeft = Math.ceil(growTime - elapsed);
+                    }
+                }
+            });
+            
+            if (updated) {
+                renderFarm();
+            }
+        }
+
+        // Рендер фермы
+        function renderFarm() {
+            const farmGrid = document.getElementById('farm-grid');
+            farmGrid.innerHTML = '';
+            
+            // Создаем грядки
+            for (let i = 0; i < gameState.plots; i++) {
+                const plot = document.createElement('div');
+                plot.className = 'plot';
+                plot.dataset.index = i;
+                
+                const plant = gameState.plants[i];
+                
+                if (plant) {
+                    plot.classList.add('planted');
+                    
+                    const plantType = plantTypes.find(p => p.id === plant.typeId);
+                    
+                    let plotContent = '';
+                    plotContent += `<div class="plant-icon">${plantType.icon}</div>`;
+                    plotContent += `<div class="plant-name">${plantType.name}</div>`;
+                    
+                    if (!plant.ready) {
+                        plotContent += `<div class="growth-bar"><div class="growth-progress" style="width: ${plant.progress}%"></div></div>`;
+                        plotContent += `<div class="time-left">${plant.timeLeft} сек</div>`;
+                    } else {
+                        plotContent += `<div class="time-left" style="color: #4CAF50; font-weight: bold;">Готово к сбору!</div>`;
+                    }
+                    
+                    plot.innerHTML = plotContent;
+                    plot.addEventListener('click', () => harvestCrop(i));
+                } else {
+                    plot.classList.add('empty');
+                    plot.innerHTML = `<div class="plant-icon">🪴</div><div class="plant-name">Пустая грядка</div>`;
+                    plot.addEventListener('click', () => selectPlot(i));
+                }
+                
+                farmGrid.appendChild(plot);
+            }
+        }
+
+        // Рендер рынка
+        function renderMarket() {
+            const marketItems = document.getElementById('market-items');
+            marketItems.innerHTML = '';
+            
+            plantTypes.forEach(plant => {
+                const sellPrice = calculateSellPrice(plant.sellPrice);
+                
+                const item = document.createElement('div');
+                item.className = 'market-item';
+                item.innerHTML = `
+                    <div class="market-item-icon">${plant.icon}</div>
+                    <div class="market-item-info">
+                        <div class="market-item-name">${plant.name}</div>
+                        <div class="market-item-price">Цена: ${sellPrice} монет</div>
+                        <div class="market-item-time">Время роста: ${plant.growTime} сек</div>
+                    </div>
+                `;
+                marketItems.appendChild(item);
+            });
+        }
+
+        // Рендер улучшений
+        function renderUpgrades() {
+            const upgradesGrid = document.getElementById('upgrades-grid');
+            upgradesGrid.innerHTML = '';
+            
+            upgrades.forEach(upgrade => {
+                const owned = gameState.upgrades.includes(upgrade.id);
+                const canAfford = gameState.money >= upgrade.price;
+                
+                const upgradeElement = document.createElement('div');
+                upgradeElement.className = 'upgrade';
+                upgradeElement.innerHTML = `
+                    <div class="upgrade-icon">${upgrade.icon}</div>
+                    <div class="upgrade-info">
+                        <div class="upgrade-name">${upgrade.name}</div>
+                        <div class="upgrade-desc">${upgrade.description}</div>
+                        <div class="upgrade-price">Цена: ${upgrade.price} монет</div>
+                    </div>
+                    <button class="btn ${owned ? 'btn-secondary' : 'btn-primary'}" ${owned || !canAfford ? 'disabled' : ''} 
+                            data-upgrade-id="${upgrade.id}">
+                        ${owned ? 'Куплено' : 'Купить'}
+                    </button>
+                `;
+                
+                upgradesGrid.appendChild(upgradeElement);
+                
+                // Добавляем обработчик события на кнопку покупки
+                const buyBtn = upgradeElement.querySelector('button');
+                if (!owned) {
+                    buyBtn.addEventListener('click', () => buyUpgrade(upgrade.id));
+                }
+            });
+        }
+
+        // Выбор грядки для посадки
+        function selectPlot(index) {
+            selectedPlot = index;
+            openPlantModal();
+        }
+
+        // Открытие модального окна посадки
+        function openPlantModal() {
+            // Если не выбрана грядка, выбираем первую пустую
+            if (selectedPlot === null) {
+                for (let i = 0; i < gameState.plots; i++) {
+                    if (!gameState.plants[i]) {
+                        selectedPlot = i;
+                        break;
+                    }
+                }
+                
+                // Если все грядки заняты
+                if (selectedPlot === null) {
+                    showMessage("Все грядки заняты! Соберите урожай или купите дополнительные грядки.", "error");
+                    return;
+                }
+            }
+            
+            // Проверяем, что выбранная грядка пуста
+            if (gameState.plants[selectedPlot]) {
+                showMessage("Эта грядка уже занята! Выберите пустую грядку.", "error");
+                selectedPlot = null;
+                return;
+            }
+            
+            const modal = document.getElementById('plant-modal');
+            const plantsGrid = document.getElementById('plants-grid');
+            plantsGrid.innerHTML = '';
+            
+            // Создаем опции для посадки
+            plantTypes.forEach(plant => {
+                const canAfford = gameState.seeds >= plant.seedsCost;
+                
+                const plantOption = document.createElement('div');
+                plantOption.className = 'plant-option';
+                plantOption.style.opacity = canAfford ? 1 : 0.6;
+                plantOption.innerHTML = `
+                    <div class="plant-option-icon">${plant.icon}</div>
+                    <div class="plant-option-name">${plant.name}</div>
+                    <div class="plant-option-price">Семян нужно: ${plant.seedsCost}</div>
+                    <div class="plant-option-time">Растет: ${plant.growTime} сек</div>
+                `;
+                
+                if (canAfford) {
+                    plantOption.addEventListener('click', () => plantCrop(plant.id));
+                } else {
+                    plantOption.addEventListener('click', () => {
+                        showMessage(`Недостаточно семян для посадки ${plant.name}! Нужно ${plant.seedsCost} семян.`, "error");
+                    });
+                }
+                
+                plantsGrid.appendChild(plantOption);
+            });
+            
+            modal.style.display = 'flex';
+        }
+
+        // Закрытие модального окна
+        function closePlantModal() {
+            const modal = document.getElementById('plant-modal');
+            modal.style.display = 'none';
+            selectedPlot = null;
+        }
+
+        // Посадка растения
+        function plantCrop(plantTypeId) {
+            const plantType = plantTypes.find(p => p.id === plantTypeId);
+            
+            // Проверяем, достаточно ли семян
+            if (gameState.seeds < plantType.seedsCost) {
+                showMessage(`Недостаточно семян! Нужно ${plantType.seedsCost} семян.`, "error");
+                return;
+            }
+            
+            // Создаем растение
+            gameState.plants[selectedPlot] = {
+                typeId: plantTypeId,
+                plantedAt: Date.now(),
+                ready: false,
+                progress: 0,
+                timeLeft: plantType.growTime
+            };
+            
+            // Вычитаем семена
+            gameState.seeds -= plantType.seedsCost;
+            
+            // Закрываем модальное окно
+            closePlantModal();
+            
+            // Обновляем отображение
+            renderFarm();
+            updateStats();
+            
+            showMessage(`Вы посадили ${plantType.name}! Урожай будет готов через ${plantType.growTime} секунд.`, "info");
+        }
+
+        // Сбор урожая с одной грядки
+        function harvestCrop(plotIndex) {
+            const plant = gameState.plants[plotIndex];
+            
+            if (!plant) {
+                showMessage("На этой грядке ничего не растет!", "error");
+                return;
+            }
+            
+            if (!plant.ready) {
+                showMessage("Растение еще не выросло! Подождите немного.", "error");
+                return;
+            }
+            
+            const plantType = plantTypes.find(p => p.id === plant.typeId);
+            const sellPrice = calculateSellPrice(plantType.sellPrice);
+            
+            // Добавляем деньги
+            gameState.money += sellPrice;
+            
+            // Добавляем опыт
+            gameState.experience += 5;
+            
+            // Проверяем уровень
+            checkLevelUp();
+            
+            // Удаляем растение
+            gameState.plants[plotIndex] = null;
+            
+            // Обновляем отображение
+            renderFarm();
+            updateStats();
+            
+            showMessage(`Вы собрали ${plantType.name} и продали его за ${sellPrice} монет!`, "info");
+        }
+
+        // Сбор всего урожая
+        function harvestAllCrops() {
+            let harvested = 0;
+            
+            for (let i = 0; i < gameState.plots; i++) {
+                const plant = gameState.plants[i];
+                
+                if (plant && plant.ready) {
+                    const plantType = plantTypes.find(p => p.id === plant.typeId);
+                    const sellPrice = calculateSellPrice(plantType.sellPrice);
+                    
+                    // Добавляем деньги
+                    gameState.money += sellPrice;
+                    
+                    // Добавляем опыт
+                    gameState.experience += 5;
+                    
+                    // Удаляем растение
+                    gameState.plants[i] = null;
+                    
+                    harvested++;
+                }
+            }
+            
+            if (harvested === 0) {
+                showMessage("Нет готовых к сбору растений!", "error");
+                return;
+            }
+            
+            // Проверяем уровень
+            checkLevelUp();
+            
+            // Обновляем отображение
+            renderFarm();
+            updateStats();
+            
+            showMessage(`Вы собрали ${harvested} растений и продали урожай!`, "info");
+        }
+
+        // Продажа всего урожая (сбор + продажа)
+        function sellAllCrops() {
+            harvestAllCrops();
+        }
+
+        // Покупка улучшения
+        function buyUpgrade(upgradeId) {
+            const upgrade = upgrades.find(u => u.id === upgradeId);
+            
+            // Проверяем, достаточно ли денег
+            if (gameState.money < upgrade.price) {
+                showMessage(`Недостаточно денег для покупки "${upgrade.name}"! Нужно ${upgrade.price} монет.`, "error");
+                return;
+            }
+            
+            // Проверяем, не куплено ли уже улучшение
+            if (gameState.upgrades.includes(upgradeId)) {
+                showMessage(`Улучшение "${upgrade.name}" уже куплено!`, "error");
+                return;
+            }
+            
+            // Вычитаем деньги
+            gameState.money -= upgrade.price;
+            
+            // Добавляем улучшение
+            gameState.upgrades.push(upgradeId);
+            
+            // Применяем эффект улучшения
+            applyUpgradeEffect(upgrade);
+            
+            // Обновляем отображение
+            updateStats();
+            renderUpgrades();
+            
+            showMessage(`Вы купили улучшение "${upgrade.name}"!`, "info");
+        }
+
+        // Применение эффекта улучшения
+        function applyUpgradeEffect(upgrade) {
+            switch (upgrade.effect) {
+                case 'addPlot':
+                    if (gameState.plots < gameState.maxPlots) {
+                        gameState.plots++;
+                        renderFarm();
+                    }
+                    break;
+                case 'fasterGrowth':
+                    // Эффект уже учтен в расчете времени роста
+                    break;
+                case 'betterPrice':
+                    // Эффект уже учтен в расчете цены продажи
+                    break;
+                case 'autoWater':
+                    showMessage("Система полива автоматически поливает ваши растения!", "info");
+                    break;
+                case 'greenhouse':
+                    showMessage("Теплица увеличивает доход от продажи растений!", "info");
+                    break;
+            }
+        }
+
+        // Расчет цены продажи с учетом улучшений
+        function calculateSellPrice(basePrice) {
+            let multiplier = 1;
+            
+            // Улучшение "Удобрение"
+            if (gameState.upgrades.includes(3)) {
+                multiplier += 0.15;
+            }
+            
+            // Улучшение "Теплица"
+            if (gameState.upgrades.includes(5)) {
+                multiplier += 0.25;
+            }
+            
+            return Math.floor(basePrice * multiplier);
+        }
+
+        // Проверка повышения уровня
+        function checkLevelUp() {
+            const expNeeded = gameState.level * 50;
+            
+            if (gameState.experience >= expNeeded) {
+                gameState.level++;
+                gameState.experience = 0;
+                gameState.seeds += gameState.level * 5; // Награда за уровень
+                
+                showMessage(`Поздравляем! Вы достигли ${gameState.level} уровня! Получено ${gameState.level * 5} семян.`, "info");
+            }
+        }
+
+        // Обновление статистики
+        function updateStats() {
+            document.getElementById('money').textContent = gameState.money;
+            document.getElementById('seeds').textContent = gameState.seeds;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('plots').textContent = `${gameState.plots}/${gameState.maxPlots}`;
+        }
+
+        // Показать сообщение
+        function showMessage(text, type = "info") {
+            const messagesContainer = document.getElementById('messages-container');
+            
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            
+            messagesContainer.appendChild(message);
+            
+            // Удаляем сообщение через 3 секунды
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+
+        // Сохранение игры
+        function saveGame() {
+            const saveData = {
+                ...gameState,
+                plants: gameState.plants.map(plant => {
+                    if (!plant) return null;
+                    
+                    // Сохраняем только необходимые данные
+                    return {
+                        typeId: plant.typeId,
+                        plantedAt: plant.plantedAt,
+                        ready: plant.ready,
+                        progress: plant.progress,
+                        timeLeft: plant.timeLeft
+                    };
+                })
+            };
+            
+            localStorage.setItem('farmSimulatorSave', JSON.stringify(saveData));
+        }
+
+        // Загрузка игры
+        function loadGame() {
+            const savedData = localStorage.getItem('farmSimulatorSave');
+            
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                
+                // Восстанавливаем основные данные
+                gameState.money = parsedData.money || 100;
+                gameState.seeds = parsedData.seeds || 10;
+                gameState.level = parsedData.level || 1;
+                gameState.experience = parsedData.experience || 0;
+                gameState.plots = parsedData.plots || 4;
+                gameState.upgrades = parsedData.upgrades || [];
+                
+                // Восстанавливаем растения
+                if (parsedData.plants) {
+                    gameState.plants = parsedData.plants.map(plant => {
+                        if (!plant) return null;
+                        
+                        // Если растение было посажено, корректируем время посадки
+                        if (plant.plantedAt) {
+                            const now = Date.now();
+                            const elapsed = (now - plant.plantedAt) / 1000;
+                            const plantType = plantTypes.find(p => p.id === plant.typeId);
+                            const growTime = plantType.growTime * (gameState.upgrades.includes(2) ? 0.9 : 1);
+                            
+                            if (elapsed >= growTime) {
+                                plant.ready = true;
+                                plant.progress = 100;
+                            } else {
+                                plant.ready = false;
+                                plant.progress = (elapsed / growTime) * 100;
+                                plant.timeLeft = Math.ceil(growTime - elapsed);
+                            }
+                        }
+                        
+                        return plant;
+                    });
+                } else {
+                    gameState.plants = Array(gameState.plots).fill(null);
+                }
+                
+                showMessage("Игра загружена!", "info");
+            } else {
+                // Начальное состояние игры
+                gameState.plants = Array(gameState.plots).fill(null);
+            }
+        }
+
+        // Запуск игры при загрузке страницы
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
